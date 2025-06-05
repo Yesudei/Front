@@ -6,11 +6,15 @@ import LoginForm from './components/LoginForm';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import './App.css';
+import Register from './assets/Register'
+import VerifyNumber from './assets/Verifynumber';'./assets/Verifynumber'
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginForm />} />
+      <Route path="/register" element={<Register />} /> 
+      <Route path="/verify-number" element={<VerifyNumber />} />
       <Route
         path="/"
         element={
@@ -27,3 +31,12 @@ function App() {
 }
 
 export default App;
+
+
+
+
+
+
+
+
+

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../usercontext';
 import './loginform.css';
 
+
 const LoginForm = () => {
   const navigate = useNavigate();
   const { login, accessToken, username } = useUser();
@@ -108,9 +109,10 @@ const handleLogin = async (e) => {
           Login
         </button>
         <div className="register-link">
-          <p>
-            Don't have an account? <a href="#">Register</a>
-          </p>
+<p>
+  Don't have an account? <a onClick={() => navigate('/register')} role = 'button' style={{cursor :'pointer'}}>Register</a>
+</p>
+
         </div>
       </form>
     </div>
