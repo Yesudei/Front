@@ -6,8 +6,10 @@ import LoginForm from './components/LoginForm';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import './App.css';
-import Register from './assets/Register'
-import VerifyNumber from './assets/Verifynumber';'./assets/Verifynumber'
+import Register from './assets/Register';
+import VerifyNumber from './assets/Verifynumber';
+import ResetPassword from './assets/ResetPassword';
+import ResetPhoneEntry from './assets/ResetPhoneEntry'; // ✅ NEW import
 
 function App() {
   return (
@@ -15,6 +17,8 @@ function App() {
       <Route path="/login" element={<LoginForm />} />
       <Route path="/register" element={<Register />} /> 
       <Route path="/verify-number" element={<VerifyNumber />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/reset-phone" element={<ResetPhoneEntry />} /> {/* ✅ NEW route */}
       <Route
         path="/"
         element={

@@ -103,7 +103,12 @@ const handleLogin = async (e) => {
         </div>
         {error && <p className="error-message">{error}</p>}
         <div className="remember-forget">
-          <a href="#">Forgot password?</a>
+<p>
+  <a onClick={() => navigate('/reset-phone')} style={{ cursor: 'pointer' }}>
+    Forgot password?
+  </a>
+</p>
+
         </div>
         <button type="submit" className="login-btn">
           Login
