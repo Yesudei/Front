@@ -1,16 +1,43 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../usercontext';
 import viotLogo from '../assets/viot.png';
 
 function Header() {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [username, setUsername] = useState('');
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
   const navigate = useNavigate();
 
-  const { username, logout } = useUser();
+  // 🔐 Fetch user data using access token
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
 
+    fetch('http://localhost:3001/users/getUser', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Unauthorized or failed to fetch user');
+        }
+        return res.json();
+        console.log(res)
+      })
+      .then((data) => {
+        setUsername(data.username || 'User');
+        console.log(data)
+      })
+      .catch((err) => {
+        console.error('Error fetching user:', err.message);
+        setUsername('User');
+      });
+  }, []);
+
+  // ⬇ Dropdown close logic
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -25,7 +52,7 @@ function Header() {
     function handleKeyDown(event) {
       if (event.key === 'Escape') {
         setShowDropdown(false);
-        buttonRef.current.focus();
+        buttonRef.current?.focus();
       }
     }
 
@@ -38,8 +65,9 @@ function Header() {
     };
   }, []);
 
+  // ⏏ Logout function
   const handleLogout = () => {
-    logout();
+    localStorage.removeItem('accessToken');
     navigate('/login');
   };
 
@@ -56,13 +84,11 @@ function Header() {
           aria-expanded={showDropdown}
           onClick={() => setShowDropdown((prev) => !prev)}
         >
-          {username || 'User'}
+          {username}
         </button>
         {showDropdown && (
           <ul className="user-dropdown" role="menu" aria-label="User menu">
-            <li role="menuitem" tabIndex={0}>
-              Settings
-            </li>
+            <li role="menuitem" tabIndex={0}>Settings</li>
             <li
               role="menuitem"
               tabIndex={0}
