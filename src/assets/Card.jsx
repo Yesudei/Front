@@ -1,8 +1,7 @@
 import React from 'react';
 import { Switch } from 'antd';
 
-function Card({ Icon, title, value, status, onToggle, isChecked }) {
-  // Map status to colors
+function Card({ Icon, title, children, status, onToggle, isChecked }) {
   const statusColor = {
     Hot: 'red',
     Cold: 'blue',
@@ -21,7 +20,7 @@ function Card({ Icon, title, value, status, onToggle, isChecked }) {
       </div>
       <div className='card-bottom'>
         <h3>{title}</h3>
-        <h1>{value}</h1>
+        {children}
         {status && (
           <p style={{ color: statusColor[status], fontWeight: 'bold', marginTop: '5px' }}>
             {status}

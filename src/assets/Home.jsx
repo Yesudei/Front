@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useUser } from '../usercontext';
+import Card from './Card';
 
 const Home = () => {
   const { accessToken, refreshToken, setAccessToken, logout } = useUser();
   const [userData, setUserData] = useState(null);
-  const [mqttDataList, setMqttDataList] = useState({}); // { clientId: data }
+  const [mqttDataList, setMqttDataList] = useState({});
 
   const refreshAccessToken = async () => {
     try {
@@ -97,70 +98,46 @@ const Home = () => {
   }, [userData, accessToken]);
 
   return (
-    <div style={{ maxWidth: '700px', margin: 'auto', padding: '1rem' }}>
+    <div
+      style={{
+        width: '100%',
+        maxWidth: '2000px',
+        margin: '1rem auto',
+        padding: '2rem',
+      }}
+    >
       <h1>User Devices & Latest MQTT Data</h1>
       {!userData && <p>Loading user data...</p>}
 
       {userData && userData.user.devices.length === 0 && <p>No devices found</p>}
 
-      {userData &&
-        userData.user.devices.map((device) => (
-          <div
-            key={device._id}
-            style={{
-              border: '1px solid #ccc',
-              padding: '1rem',
-              marginBottom: '1rem',
-              borderRadius: '8px',
-              boxShadow: '2px 2px 8px rgba(0,0,0,0.1)',
-            }}
-          >
-            <h3>{device.clientId}</h3>
-            <p>
-              <strong>Entity:</strong> {device.clientId}
-            </p>
-            <p>
-              <strong>Category:</strong> {device.category}
-            </p>
-            <p>
-              <strong>Type:</strong> {device.type}
-            </p>
-    <h4>Latest Data:</h4>
-{mqttDataList[device.clientId] ? (
-  <div style={{
-    border: '1px solid #ccc',
-    padding: '12px',
-    marginTop: '10px',
-    borderRadius: '8px',
-    backgroundColor: '#fafafa',
-    maxWidth: '400px'
-  }}>
-    <h4>Latest Data:</h4>
-    <p><strong>_id:</strong> {mqttDataList[device.clientId]._id}</p>
-    <p><strong>ClientId:</strong> {mqttDataList[device.clientId].clientId}</p>
-    <p><strong>Entity:</strong> {mqttDataList[device.clientId].entity}</p>
-
-    <div>
-      <strong>Data:</strong>
-      <ul style={{ marginLeft: '20px' }}>
-        {Object.entries(mqttDataList[device.clientId].data).map(([key, value]) => (
-          <li key={key}>
-            <strong>{key}:</strong> {value.toString()}
-          </li>
-        ))}
-      </ul>
-    </div>
-
-    <p><strong>Timestamp:</strong> {new Date(mqttDataList[device.clientId].timestamp).toLocaleString()}</p>
-    <p><strong>__v:</strong> {mqttDataList[device.clientId].__v}</p>
-  </div>
-) : (
-  <p>Loading data...</p>
-)}
-
-
-          </div>
-        ))}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+          gap: '20px',
+          marginTop: '20px',
+        }}
+      >
+        {userData &&
+          userData.user.devices.map((device) => (
+            <Card
+              key={device._id}
+              Icon={() => <span>📟</span>}
+              title={device.clientId}
+            >
+              {mqttDataList[device.clientId] ? (
+                <div style={{ marginTop: '10px' }}>
+                  <p>🌡️ Temperature: {mqttDataList[device.clientId].Temperature} °C</p>
+                  <p>💧 Humidity: {mqttDataList[device.clientId].Humidity} %</p>
+                  <p>❄️ Dew Point: {mqttDataList[device.clientId].DewPoint} °C</p>
+                </div>
+              ) : (
+                <p>Loading data...</p>
+              )}
+            </Card>
+          ))}
+      </div>
     </div>
   );
 };
