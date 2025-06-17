@@ -1,124 +1,166 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useUser } from '../usercontext';
 
 const Home = () => {
-  const [devices, setDevices] = useState([]);
-  const [accessToken, setAccessToken] = useState(null);
-  const [refreshToken, setRefreshToken] = useState(null);
+  const { accessToken, refreshToken, setAccessToken, logout } = useUser();
+  const [userData, setUserData] = useState(null);
+  const [mqttDataList, setMqttDataList] = useState({}); // { clientId: data }
 
-  // Simulate login to get tokens (you may replace this with your real login)
-  const loginUser = async (email, password) => {
-    try {
-      const response = await axios.post(
-        'http://localhost:3001/users/login',
-        { email, password },
-        { withCredentials: true }
-      );
-
-      const newAccessToken = response.data.accessToken || response.headers['x-access-token'];
-      const newRefreshToken = response.headers['x-refresh-token'];
-
-      console.log('🟢 Login successful');
-      console.log('Access token:', newAccessToken);
-      console.log('Refresh token:', newRefreshToken);
-
-      setAccessToken(newAccessToken);
-      setRefreshToken(newRefreshToken);
-    } catch (error) {
-      console.error('❌ Login failed:', error);
-    }
-  };
-
-  // Call this function to refresh access token using refresh token from header
   const refreshAccessToken = async () => {
     try {
-      console.log('🔄 Refreshing access token...');
       const response = await axios.post(
         'http://localhost:3001/users/refresh',
         {},
         {
-          headers: {
-            'x-refresh-token': refreshToken,
-          },
+          headers: { 'x-refresh-token': refreshToken },
           withCredentials: true,
         }
       );
-
       const newAccessToken = response.data.accessToken || response.headers['x-access-token'];
-      console.log('🆕 New access token:', newAccessToken);
-
-      if (!newAccessToken) {
-        console.error('❌ No access token received on refresh');
-        return null;
-      }
-
+      if (!newAccessToken) throw new Error('No access token returned');
       setAccessToken(newAccessToken);
       return newAccessToken;
     } catch (error) {
-      console.error('❌ Error refreshing token:', error);
+      console.error('Error refreshing token:', error);
+      logout();
       return null;
     }
   };
 
-  const fetchTemperatureDevices = async () => {
+  const fetchUserData = async (token) => {
     try {
-      let token = accessToken;
-
-      if (!token) {
-        console.log('⚠️ No access token available, trying to refresh...');
-        token = await refreshAccessToken();
-        if (!token) {
-          console.error('❌ No token available, cannot fetch devices');
-          return;
-        }
-      }
-
-      console.log('📡 Fetching temperature devices with token:', token);
       const response = await axios.get('http://localhost:3001/users/getuser', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
-
-      setDevices(response.data);
-      console.log('✅ Devices fetched:', response.data);
+      setUserData(response.data);
     } catch (error) {
       if (error.response?.status === 401) {
-        console.log('⚠️ Access token expired, refreshing...');
         const newToken = await refreshAccessToken();
         if (newToken) {
-          await fetchTemperatureDevices(); // retry with new token
+          await fetchUserData(newToken);
         } else {
-          console.error('❌ Unable to refresh token');
+          console.error('Unable to refresh token');
         }
       } else {
-        console.error('❌ Error fetching devices:', error);
+        console.error('Error fetching user data:', error);
       }
     }
   };
 
-  // On mount, simulate login then fetch devices
+  const fetchMqttDataForClient = async (clientId, token) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3001/mqt/data?clientId=${clientId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        }
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error(`Error fetching MQTT data for clientId ${clientId}:`, error);
+      return null;
+    }
+  };
+
+  const fetchAllMqttData = async (clientIds, token) => {
+    const results = {};
+    await Promise.all(
+      clientIds.map(async (id) => {
+        const data = await fetchMqttDataForClient(id, token);
+        if (data) results[id] = data;
+      })
+    );
+    setMqttDataList(results);
+  };
+
   useEffect(() => {
-    // Replace with actual login credentials
-    loginUser('test@example.com', 'password123').then(() => {
-      fetchTemperatureDevices();
-    });
-  }, []);
+    if (!accessToken) {
+      console.warn('No access token available, user probably not logged in');
+      return;
+    }
+    fetchUserData(accessToken);
+  }, [accessToken]);
+
+  useEffect(() => {
+    if (
+      userData &&
+      userData.user &&
+      userData.user.devices &&
+      userData.user.devices.length > 0
+    ) {
+      const clientIds = userData.user.devices.map((device) => device.clientId);
+      fetchAllMqttData(clientIds, accessToken);
+    }
+  }, [userData, accessToken]);
 
   return (
+    <div style={{ maxWidth: '700px', margin: 'auto', padding: '1rem' }}>
+      <h1>User Devices & Latest MQTT Data</h1>
+      {!userData && <p>Loading user data...</p>}
+
+      {userData && userData.user.devices.length === 0 && <p>No devices found</p>}
+
+      {userData &&
+        userData.user.devices.map((device) => (
+          <div
+            key={device._id}
+            style={{
+              border: '1px solid #ccc',
+              padding: '1rem',
+              marginBottom: '1rem',
+              borderRadius: '8px',
+              boxShadow: '2px 2px 8px rgba(0,0,0,0.1)',
+            }}
+          >
+            <h3>{device.clientId}</h3>
+            <p>
+              <strong>Entity:</strong> {device.clientId}
+            </p>
+            <p>
+              <strong>Category:</strong> {device.category}
+            </p>
+            <p>
+              <strong>Type:</strong> {device.type}
+            </p>
+    <h4>Latest Data:</h4>
+{mqttDataList[device.clientId] ? (
+  <div style={{
+    border: '1px solid #ccc',
+    padding: '12px',
+    marginTop: '10px',
+    borderRadius: '8px',
+    backgroundColor: '#fafafa',
+    maxWidth: '400px'
+  }}>
+    <h4>Latest Data:</h4>
+    <p><strong>_id:</strong> {mqttDataList[device.clientId]._id}</p>
+    <p><strong>ClientId:</strong> {mqttDataList[device.clientId].clientId}</p>
+    <p><strong>Entity:</strong> {mqttDataList[device.clientId].entity}</p>
+
     <div>
-      <h1>Temperature Devices</h1>
-      {devices.length === 0 ? (
-        <p>No temperature devices found.</p>
-      ) : (
-        <ul>
-          {devices.map((device) => (
-            <li key={device.id}>
-              {device.name} - {device.temperature}°C
-            </li>
-          ))}
-        </ul>
-      )}
+      <strong>Data:</strong>
+      <ul style={{ marginLeft: '20px' }}>
+        {Object.entries(mqttDataList[device.clientId].data).map(([key, value]) => (
+          <li key={key}>
+            <strong>{key}:</strong> {value.toString()}
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <p><strong>Timestamp:</strong> {new Date(mqttDataList[device.clientId].timestamp).toLocaleString()}</p>
+    <p><strong>__v:</strong> {mqttDataList[device.clientId].__v}</p>
+  </div>
+) : (
+  <p>Loading data...</p>
+)}
+
+
+          </div>
+        ))}
     </div>
   );
 };
