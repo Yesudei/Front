@@ -6,21 +6,21 @@ const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(null);
   const [username, setUsername] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const tokenFromCookie = Cookies.get('token');
-  const usernameFromCookie = Cookies.get('username');
-  console.log('Restoring from cookies:', { tokenFromCookie, usernameFromCookie });
-  if (tokenFromCookie && usernameFromCookie) {
-    setAccessToken(tokenFromCookie);
-    setUsername(usernameFromCookie);
-  }
-}, []);
-
+  useEffect(() => {
+    const tokenFromCookie = Cookies.get('token');
+    const usernameFromCookie = Cookies.get('username');
+    if (tokenFromCookie && usernameFromCookie) {
+      setAccessToken(tokenFromCookie);
+      setUsername(usernameFromCookie);
+    }
+    setLoading(false);
+  }, []);
 
   const login = (token, username) => {
-    Cookies.set('token', token, { expires: 0.02 });
-    Cookies.set('username', username, { expires: 0.02 });
+    Cookies.set('token', token, { expires: 1 });
+    Cookies.set('username', username, { expires: 1 });
     setAccessToken(token);
     setUsername(username);
   };
@@ -31,6 +31,10 @@ useEffect(() => {
     setAccessToken(null);
     setUsername(null);
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <UserContext.Provider value={{ accessToken, username, login, logout, setAccessToken, setUsername }}>

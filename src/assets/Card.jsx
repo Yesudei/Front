@@ -1,7 +1,14 @@
-import React from 'react'
-import { Switch } from 'antd'
+import React from 'react';
+import { Switch } from 'antd';
 
-function Card({ Icon, title, value, onToggle, isChecked}) {
+function Card({ Icon, title, value, status, onToggle, isChecked }) {
+  // Map status to colors
+  const statusColor = {
+    Hot: 'red',
+    Cold: 'blue',
+    Normal: 'green',
+  };
+
   return (
     <div className='card'>
       <div className='card-top'>
@@ -10,14 +17,19 @@ function Card({ Icon, title, value, onToggle, isChecked}) {
           checked={isChecked}
           onChange={onToggle}
           className='antd-switch'
-        ></Switch>
+        />
       </div>
       <div className='card-bottom'>
         <h3>{title}</h3>
         <h1>{value}</h1>
+        {status && (
+          <p style={{ color: statusColor[status], fontWeight: 'bold', marginTop: '5px' }}>
+            {status}
+          </p>
+        )}
       </div>
     </div>
-  )
+  );
 }
 
-export default Card
+export default Card;
