@@ -96,6 +96,10 @@ const Home = () => {
       fetchAllMqttData(clientIds, accessToken);
     }
   }, [userData, accessToken]);
+  useEffect(() => {
+  console.log('MQTT data:', mqttDataList);
+}, [mqttDataList]);
+
 
   return (
     <div
@@ -128,9 +132,9 @@ const Home = () => {
             >
               {mqttDataList[device.clientId] ? (
                 <div style={{ marginTop: '10px' }}>
-                  <p>🌡️ Temperature: {mqttDataList[device.clientId].Temperature} °C</p>
-                  <p>💧 Humidity: {mqttDataList[device.clientId].Humidity} %</p>
-                  <p>❄️ Dew Point: {mqttDataList[device.clientId].DewPoint} °C</p>
+                  <p>🌡️ Temperature: {mqttDataList[device.clientId].data.Temperature} °C</p>
+                  <p>💧 Humidity: {mqttDataList[device.clientId].data.Humidity} %</p>
+                  <p>❄️ Dew Point: {mqttDataList[device.clientId].data.DewPoint} °C</p>
                 </div>
               ) : (
                 <p>Loading data...</p>
