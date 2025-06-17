@@ -1,11 +1,45 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [accessToken, setAccessToken] = useState(null);
-  const [refreshToken, setRefreshToken] = useState(null);
-  const [username, setUsername] = useState(null);
+  const [accessToken, setAccessTokenState] = useState(null);
+  const [refreshToken, setRefreshTokenState] = useState(null);
+  const [username, setUsernameState] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);  // <-- Added loading state
+
+  useEffect(() => {
+    // Load tokens & username from localStorage on mount
+    const storedAccessToken = localStorage.getItem('accessToken');
+    const storedRefreshToken = localStorage.getItem('refreshToken');
+    const storedUsername = localStorage.getItem('username');
+
+    if (storedAccessToken && storedRefreshToken) {
+      setAccessTokenState(storedAccessToken);
+      setRefreshTokenState(storedRefreshToken);
+      setUsernameState(storedUsername);
+    }
+    setIsLoading(false);  // <-- Mark loading done here
+  }, []);
+
+  // Wrapper functions to keep localStorage in sync
+  const setAccessToken = (token) => {
+    setAccessTokenState(token);
+    if (token) localStorage.setItem('accessToken', token);
+    else localStorage.removeItem('accessToken');
+  };
+
+  const setRefreshToken = (token) => {
+    setRefreshTokenState(token);
+    if (token) localStorage.setItem('refreshToken', token);
+    else localStorage.removeItem('refreshToken');
+  };
+
+  const setUsername = (name) => {
+    setUsernameState(name);
+    if (name) localStorage.setItem('username', name);
+    else localStorage.removeItem('username');
+  };
 
   const login = (newAccessToken, newRefreshToken, userName) => {
     setAccessToken(newAccessToken);
@@ -17,6 +51,9 @@ export const UserProvider = ({ children }) => {
     setAccessToken(null);
     setRefreshToken(null);
     setUsername(null);
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('username');
   };
 
   return (
@@ -28,6 +65,9 @@ export const UserProvider = ({ children }) => {
         login,
         logout,
         setAccessToken,
+        setRefreshToken,
+        setUsername,
+        isLoading,  // <-- expose loading state
       }}
     >
       {children}

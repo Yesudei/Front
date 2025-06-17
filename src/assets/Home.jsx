@@ -130,15 +130,27 @@ const Home = () => {
               Icon={() => <span>📟</span>}
               title={device.clientId}
             >
-              {mqttDataList[device.clientId] ? (
-                <div style={{ marginTop: '10px' }}>
-                  <p>🌡️ Temperature: {mqttDataList[device.clientId].data.Temperature} °C</p>
-                  <p>💧 Humidity: {mqttDataList[device.clientId].data.Humidity} %</p>
-                  <p>❄️ Dew Point: {mqttDataList[device.clientId].data.DewPoint} °C</p>
-                </div>
-              ) : (
-                <p>Loading data...</p>
-              )}
+          {mqttDataList[device.clientId] ? (
+  <div style={{ marginTop: '10px' }}>
+    {mqttDataList[device.clientId].data && (
+      <div style={{ marginLeft: '1rem' }}>
+        {Object.entries(mqttDataList[device.clientId].data)
+          .filter(([key]) => !['_id', '__v'].includes(key))
+          .map(([key, value]) => (
+            <p key={key}>
+              {key}: {value}
+            </p>
+          ))}
+      </div>
+    )}
+    <p><strong>Time:</strong> {new Date(mqttDataList[device.clientId].timestamp).toLocaleString()}</p>
+  </div>
+) : (
+  <p>Loading data...</p>
+)}
+
+
+
             </Card>
           ))}
       </div>

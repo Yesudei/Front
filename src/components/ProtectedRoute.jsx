@@ -1,9 +1,13 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useUser } from '../UserContext';
+import { useUser } from '../usercontext';
 
 const ProtectedRoute = ({ children }) => {
-  const { accessToken } = useUser();
+  const { accessToken, isLoading } = useUser();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return accessToken ? children : <Navigate to="/login" replace />;
 };
