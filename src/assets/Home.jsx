@@ -96,10 +96,11 @@ const Home = () => {
     }
   };
 
-  // Toggle device power state optimistically
+  // Toggle device power state optimistically and refresh sensor data immediately after success
   const toggleDevice = async (clientId, currentState) => {
     const newState = currentState === 'on' ? 'off' : 'on';
 
+    // Optimistic update of power state only
     setMqttDataList((prev) => ({
       ...prev,
       [clientId]: {
@@ -120,6 +121,15 @@ const Home = () => {
           withCredentials: true,
         }
       );
+
+      // Immediately fetch fresh data for this client to update sensor data
+      const freshData = await fetchMqttDataForClient(clientId, accessToken);
+      if (freshData) {
+        setMqttDataList((prev) => ({
+          ...prev,
+          [clientId]: freshData,
+        }));
+      }
     } catch (error) {
       console.error('Error toggling device:', error);
       // Revert on failure
