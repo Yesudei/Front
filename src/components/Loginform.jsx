@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../usercontext';
+import { useUser } from '../UserContext';
 import './loginform.css';
 
 
@@ -45,22 +45,19 @@ const handleLogin = async (e) => {
 
     const token = data.accessToken;
 
-const { accessToken, refreshToken } = data;
+    // Fetch user data using the token
+    const userRes = await fetch('http://localhost:3001/users/getuser', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: 'include',
+    });
 
-// Fetch user data using the access token
-const userRes = await fetch('http://localhost:3001/users/getuser', {
-  headers: {
-    Authorization: `Bearer ${accessToken}`,
-  },
-  credentials: 'include',
-});
+    const userData = await userRes.json();
+    if (!userRes.ok) throw new Error(userData.message || 'Failed to get user data');
 
-const userData = await userRes.json();
-if (!userRes.ok) throw new Error(userData.message || 'Failed to get user data');
-
-login(accessToken, refreshToken, userData.user.name); // ✅ correct order
-navigate('/');
-
+    login(token, userData.user.name); // or any field you want  
+    navigate('/');
   } catch (err) {
     setError(err.message);
   }

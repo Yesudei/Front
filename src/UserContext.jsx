@@ -6,10 +6,9 @@ export const UserProvider = ({ children }) => {
   const [accessToken, setAccessTokenState] = useState(null);
   const [refreshToken, setRefreshTokenState] = useState(null);
   const [username, setUsernameState] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);  // <-- Added loading state
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load tokens & username from localStorage on mount
     const storedAccessToken = localStorage.getItem('accessToken');
     const storedRefreshToken = localStorage.getItem('refreshToken');
     const storedUsername = localStorage.getItem('username');
@@ -19,10 +18,9 @@ export const UserProvider = ({ children }) => {
       setRefreshTokenState(storedRefreshToken);
       setUsernameState(storedUsername);
     }
-    setIsLoading(false);  // <-- Mark loading done here
+    setIsLoading(false);
   }, []);
 
-  // Wrapper functions to keep localStorage in sync
   const setAccessToken = (token) => {
     setAccessTokenState(token);
     if (token) localStorage.setItem('accessToken', token);
@@ -67,7 +65,7 @@ export const UserProvider = ({ children }) => {
         setAccessToken,
         setRefreshToken,
         setUsername,
-        isLoading,  // <-- expose loading state
+        isLoading,
       }}
     >
       {children}

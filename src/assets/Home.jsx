@@ -5,13 +5,20 @@ import Card from './Card';
 import './Home.css';
 
 const Home = () => {
-  const { accessToken, refreshToken, setAccessToken, logout } = useUser();
+  const {
+    accessToken,
+    refreshToken,
+    setAccessToken,
+    logout,
+  } = useUser();
+
   const [userData, setUserData] = useState(null);
   const [mqttDataList, setMqttDataList] = useState({});
   const [automationDevice, setAutomationDevice] = useState(null);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
 
+  // Refresh access token
   const refreshAccessToken = async () => {
     try {
       const response = await axios.post(
@@ -23,7 +30,6 @@ const Home = () => {
         }
       );
 
-      // Get token from either body or header
       const newAccessToken = response.data.accessToken || response.headers['x-access-token'];
 
       if (!newAccessToken) throw new Error('No access token returned');
@@ -37,6 +43,7 @@ const Home = () => {
     }
   };
 
+  // Fetch user data with token, refresh if expired
   const fetchUserData = async (token) => {
     try {
       const response = await axios.get('http://localhost:3001/users/getuser', {
@@ -46,6 +53,7 @@ const Home = () => {
       setUserData(response.data);
     } catch (error) {
       if (error.response?.status === 401) {
+        // Token expired, try refresh
         const newToken = await refreshAccessToken();
         if (newToken) await fetchUserData(newToken);
       } else {
@@ -54,6 +62,7 @@ const Home = () => {
     }
   };
 
+  // Fetch MQTT data for a single clientId
   const fetchMqttDataForClient = async (clientId, token) => {
     try {
       const response = await axios.get(
@@ -70,19 +79,27 @@ const Home = () => {
     }
   };
 
+  // Fetch all MQTT data in parallel
   const fetchAllMqttData = async (clientIds, token) => {
-    const results = {};
-    for (const id of clientIds) {
-      const data = await fetchMqttDataForClient(id, token);
-      if (data) results[id] = data;
+    try {
+      const promises = clientIds.map((id) => fetchMqttDataForClient(id, token));
+      const results = await Promise.all(promises);
+
+      const dataMap = {};
+      clientIds.forEach((id, index) => {
+        if (results[index]) dataMap[id] = results[index];
+      });
+
+      setMqttDataList(dataMap);
+    } catch (error) {
+      console.error('Error fetching all MQTT data:', error);
     }
-    setMqttDataList(results);
   };
 
+  // Toggle device power state optimistically
   const toggleDevice = async (clientId, currentState) => {
     const newState = currentState === 'on' ? 'off' : 'on';
 
-    // Optimistic update
     setMqttDataList((prev) => ({
       ...prev,
       [clientId]: {
@@ -119,6 +136,7 @@ const Home = () => {
     }
   };
 
+  // Submit automation settings
   const handleAutomationSubmit = async (e) => {
     e.preventDefault();
     if (!automationDevice) return alert('No device selected');
@@ -149,16 +167,16 @@ const Home = () => {
   };
 
   useEffect(() => {
-    if (!accessToken) return;
-    fetchUserData(accessToken);
+    if (accessToken) {
+      fetchUserData(accessToken);
+    } else {
+      setUserData(null);
+    }
   }, [accessToken]);
 
   useEffect(() => {
     if (
-      userData &&
-      userData.user &&
-      userData.user.devices &&
-      userData.user.devices.length > 0 &&
+      userData?.user?.devices?.length > 0 &&
       accessToken
     ) {
       const clientIds = userData.user.devices.map((device) => device.clientId);
@@ -170,12 +188,15 @@ const Home = () => {
       }, 10000);
 
       return () => clearInterval(intervalId);
+    } else {
+      setMqttDataList({}); // Clear if no devices or no token
     }
   }, [userData, accessToken]);
 
   return (
     <div className="container">
       <h1>User Devices & Latest MQTT Data</h1>
+
       {!userData && <p>Loading user data...</p>}
       {userData && userData.user.devices.length === 0 && <p>No devices found</p>}
 
@@ -229,8 +250,14 @@ const Home = () => {
       </div>
 
       {automationDevice && (
-        <div className="automationOverlay" onClick={() => setAutomationDevice(null)}>
-          <div className="automationModal" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="automationOverlay"
+          onClick={() => setAutomationDevice(null)}
+        >
+          <div
+            className="automationModal"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h2>Set Automation for {automationDevice.clientId}</h2>
             <form onSubmit={handleAutomationSubmit}>
               <label>Start Time:</label>

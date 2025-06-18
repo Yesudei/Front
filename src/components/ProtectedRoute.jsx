@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useUser } from '../usercontext';
+import { useUser } from '../UserContext';
 
 const ProtectedRoute = ({ children }) => {
   const { accessToken, isLoading } = useUser();
