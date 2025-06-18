@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../usercontext';
+import { useUser } from '../UserContext';
 import viotLogo from '../assets/viot.png';
 
 function Header() {
@@ -9,10 +9,10 @@ function Header() {
   const buttonRef = useRef(null);
   const navigate = useNavigate();
 
-  const { username, logout } = useUser();
+  const { username, logout, isLoading } = useUser();
 
   useEffect(() => {
-    function handleClickOutside(event) {
+    const handleClickOutside = (event) => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target) &&
@@ -20,14 +20,14 @@ function Header() {
       ) {
         setShowDropdown(false);
       }
-    }
+    };
 
-    function handleKeyDown(event) {
+    const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
         setShowDropdown(false);
         buttonRef.current.focus();
       }
-    }
+    };
 
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
@@ -42,6 +42,8 @@ function Header() {
     logout();
     navigate('/login');
   };
+
+  if (isLoading) return null;
 
   return (
     <header className="header">

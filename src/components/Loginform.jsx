@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../UserContext';
 import './loginform.css';
 
-
 const LoginForm = () => {
   const navigate = useNavigate();
   const { login, accessToken, username } = useUser();
@@ -23,58 +22,51 @@ const LoginForm = () => {
     return () => document.body.classList.remove('login-background');
   }, []);
 
-const handleLogin = async (e) => {
-  e.preventDefault();
-  if (!email || !password) {
-    setError('Please enter both email and password');
-    return;
-  }
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError('Please enter both email and password');
+      return;
+    }
 
-  try {
-    const response = await fetch('http://localhost:3001/users/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetch('http://localhost:3001/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Login failed');
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Login failed');
 
-    const token = data.accessToken;
+      const token = data.accessToken;
+      const refresh = data.refreshToken;
 
-    // Fetch user data using the token
-    const userRes = await fetch('http://localhost:3001/users/getuser', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: 'include',
-    });
+      const userRes = await fetch('http://localhost:3001/users/getuser', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
 
-    const userData = await userRes.json();
-    if (!userRes.ok) throw new Error(userData.message || 'Failed to get user data');
+      const userData = await userRes.json();
+      if (!userRes.ok) throw new Error(userData.message || 'Failed to get user data');
 
-    login(data.accessToken, data.refreshToken, userData.user.name); // or any field you want  
-    navigate('/');
-  } catch (err) {
-    setError(err.message);
-  }
-};
-
+      login(token, refresh, userData.user.name); // Make sure this matches your backend response
+      navigate('/');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   return (
     <div className="wrapper">
       <div className="form-header">
         <h1>Login</h1>
-        <span
-          className="close-btn"
-          onClick={() => window.close()}
-          role="button"
-          tabIndex={0}
-          aria-label="Close Login Form"
-        >
+        <span className="close-btn" onClick={() => window.close()} role="button" tabIndex={0}>
           ×
         </span>
       </div>
@@ -101,21 +93,22 @@ const handleLogin = async (e) => {
         </div>
         {error && <p className="error-message">{error}</p>}
         <div className="remember-forget">
-<p>
-  <a onClick={() => navigate('/reset-phone')} style={{ cursor: 'pointer' }}>
-    Forgot password?
-  </a>
-</p>
-
+          <p>
+            <a onClick={() => navigate('/reset-phone')} style={{ cursor: 'pointer' }}>
+              Forgot password?
+            </a>
+          </p>
         </div>
         <button type="submit" className="login-btn">
           Login
         </button>
         <div className="register-link">
-<p>
-  Don't have an account? <a onClick={() => navigate('/register')} role = 'button' style={{cursor :'pointer'}}>Register</a>
-</p>
-
+          <p>
+            Don't have an account?{' '}
+            <a onClick={() => navigate('/register')} role="button" style={{ cursor: 'pointer' }}>
+              Register
+            </a>
+          </p>
         </div>
       </form>
     </div>

@@ -1,58 +1,139 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [accessToken, setAccessTokenState] = useState(null);
-  const [refreshToken, setRefreshTokenState] = useState(null);
-  const [username, setUsernameState] = useState(null);
+  const [accessToken, setAccessTokenState] = useState(() => {
+    return sessionStorage.getItem('accessToken') || null;
+  });
+  const [refreshToken, setRefreshTokenState] = useState(() => {
+    return localStorage.getItem('refreshToken') || null;
+  });
+  const [username, setUsernameState] = useState(() => {
+    return sessionStorage.getItem('username') || null;
+  });
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const storedAccessToken = localStorage.getItem('accessToken');
-    const storedRefreshToken = localStorage.getItem('refreshToken');
-    const storedUsername = localStorage.getItem('username');
-
-    if (storedAccessToken && storedRefreshToken) {
-      setAccessTokenState(storedAccessToken);
-      setRefreshTokenState(storedRefreshToken);
-      setUsernameState(storedUsername);
+  const setAccessToken = useCallback((token) => {
+    setAccessTokenState(token);
+    if (token) {
+      sessionStorage.setItem('accessToken', token);
+    } else {
+      sessionStorage.removeItem('accessToken');
     }
-    setIsLoading(false);
   }, []);
 
-  const setAccessToken = (token) => {
-    setAccessTokenState(token);
-    if (token) localStorage.setItem('accessToken', token);
-    else localStorage.removeItem('accessToken');
-  };
-
-  const setRefreshToken = (token) => {
+  const setRefreshToken = useCallback((token) => {
     setRefreshTokenState(token);
-    if (token) localStorage.setItem('refreshToken', token);
-    else localStorage.removeItem('refreshToken');
-  };
+    if (token) {
+      localStorage.setItem('refreshToken', token);
+    } else {
+      localStorage.removeItem('refreshToken');
+    }
+  }, []);
 
-  const setUsername = (name) => {
+  const setUsername = useCallback((name) => {
     setUsernameState(name);
-    if (name) localStorage.setItem('username', name);
-    else localStorage.removeItem('username');
-  };
+    if (name) {
+      sessionStorage.setItem('username', name);
+    } else {
+      sessionStorage.removeItem('username');
+    }
+  }, []);
 
-  const login = (newAccessToken, newRefreshToken, userName) => {
+  const login = useCallback((newAccessToken, newRefreshToken, name) => {
     setAccessToken(newAccessToken);
     setRefreshToken(newRefreshToken);
-    setUsername(userName);
-  };
+    setUsername(name);
+  }, [setAccessToken, setRefreshToken, setUsername]);
 
-  const logout = () => {
+  const logout = useCallback(() => {
+    // Client-side only cleanup
     setAccessToken(null);
     setRefreshToken(null);
     setUsername(null);
-    localStorage.removeItem('accessToken');
+    sessionStorage.clear();
     localStorage.removeItem('refreshToken');
-    localStorage.removeItem('username');
-  };
+  }, [setAccessToken, setRefreshToken, setUsername]);
+
+  const refreshAccessToken = useCallback(async () => {
+    if (!refreshToken) {
+      logout();
+      return null;
+    }
+
+    try {
+      const response = await axios.post(
+        'http://localhost:3001/users/refresh',
+        {},
+        {
+          headers: { 'x-refresh-token': refreshToken },
+          withCredentials: true,
+        }
+      );
+
+      const newAccessToken = response.data.accessToken;
+      if (!newAccessToken) {
+        throw new Error('No access token in response');
+      }
+
+      setAccessToken(newAccessToken);
+      return newAccessToken;
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      logout();
+      return null;
+    }
+  }, [refreshToken, logout, setAccessToken]);
+
+  useEffect(() => {
+    const initializeSession = async () => {
+      // If we have an access token, verify it's still valid
+      if (accessToken) {
+        try {
+          await axios.get('http://localhost:3001/users/validate', {
+            headers: { Authorization: `Bearer ${accessToken}` },
+            withCredentials: true,
+          });
+          setIsLoading(false);
+          return;
+        } catch (error) {
+          console.log('Access token invalid, attempting refresh...');
+        }
+      }
+
+      // If no refresh token, we're logged out
+      if (!refreshToken) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Attempt to refresh the access token
+      try {
+        const newAccessToken = await refreshAccessToken();
+        if (!newAccessToken) {
+          throw new Error('Refresh failed');
+        }
+
+        // Fetch user data if we don't have username
+        if (!username) {
+          const userResponse = await axios.get('http://localhost:3001/users/getuser', {
+            headers: { Authorization: `Bearer ${newAccessToken}` },
+            withCredentials: true,
+          });
+          setUsername(userResponse.data.user.name);
+        }
+      } catch (error) {
+        console.error('Session initialization failed:', error);
+        logout();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeSession();
+  }, [accessToken, refreshToken, username, refreshAccessToken, logout, setUsername]);
 
   return (
     <UserContext.Provider
@@ -60,12 +141,12 @@ export const UserProvider = ({ children }) => {
         accessToken,
         refreshToken,
         username,
+        isLoading,
         login,
         logout,
+        refreshAccessToken,
         setAccessToken,
-        setRefreshToken,
         setUsername,
-        isLoading,
       }}
     >
       {children}
@@ -73,4 +154,10 @@ export const UserProvider = ({ children }) => {
   );
 };
 
-export const useUser = () => useContext(UserContext);
+export const useUser = () => {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error('useUser must be used within a UserProvider');
+  }
+  return context;
+};
