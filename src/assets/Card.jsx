@@ -1,7 +1,15 @@
 import React from 'react';
 import { Switch } from 'antd';
 
-function Card({ Icon, title, children, status, onToggle, isChecked }) {
+function Card({
+  Icon,
+  title,
+  children,
+  status,
+  onToggle,
+  isChecked,
+  onAutomationClick,
+}) {
   // Emoji for temperature status
   const statusEmoji = {
     Hot: '🔥',
@@ -15,11 +23,7 @@ function Card({ Icon, title, children, status, onToggle, isChecked }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Icon className='card-icon' />
           {status && (
-            <span
-              style={{
-                fontSize: '1.3 rem', // smaller emoji
-              }}
-            >
+            <span style={{ fontSize: '1.3rem' }}>
               {statusEmoji[status]}
             </span>
           )}
@@ -33,10 +37,21 @@ function Card({ Icon, title, children, status, onToggle, isChecked }) {
           unCheckedChildren="OFF"
         />
       </div>
+
       <div className='card-bottom'>
-        {children}
+        <div className='card-metrics'>
+          {children}
+        </div>
+        <div className='card-button'>
+          <button
+            className='automation-btn'
+            onClick={onAutomationClick}
+          >
+            Automation
+          </button>
+        </div>
       </div>
-    </div>
+    </div> // ✅ This was missing
   );
 }
 

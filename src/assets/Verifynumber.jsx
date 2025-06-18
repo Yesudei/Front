@@ -17,36 +17,46 @@ const VerifyNumber = () => {
   const phoneNumber = location.state?.phoneNumber || '';
   const mode = location.state?.mode || 'register';
 
-  useEffect(() => {
-    const sendOtp = async () => {
-      try {
-        const url = mode === 'reset'
-          ? 'http://localhost:3001/otp/forgot_pass'
-          : 'http://localhost:3001/otp/verify';
+useEffect(() => {
+  const otpAlreadySent = location.state?.otpSent;
 
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phoneNumber, authType: mode }),
-        });
+  if (!phoneNumber) {
+    setError('No phone number provided');
+    setSending(false);
+    return;
+  }
 
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Failed to send OTP');
-        setMessage('OTP sent successfully');
-      } catch (err) {
-        setError('Error sending OTP: ' + err.message);
-      } finally {
-        setSending(false);
-      }
-    };
+  if (otpAlreadySent) {
+    setMessage('OTP has already been sent');
+    setSending(false);
+    return;
+  }
 
-    if (phoneNumber) {
-      sendOtp();
-    } else {
-      setError('No phone number provided');
+  const sendOtp = async () => {
+    try {
+      const url = mode === 'reset'
+        ? 'http://localhost:3001/otp/forgot_pass'
+        : 'http://localhost:3001/otp/verify';
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber, authType: mode }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to send OTP');
+      setMessage('OTP sent successfully');
+    } catch (err) {
+      setError('Error sending OTP: ' + err.message);
+    } finally {
       setSending(false);
     }
-  }, [phoneNumber, mode]);
+  };
+
+  sendOtp();
+}, [phoneNumber, mode, location.state]);
+
 
   const handleChange = (e, index) => {
     const value = e.target.value.replace(/\D/, '');

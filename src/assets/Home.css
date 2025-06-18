@@ -1,0 +1,130 @@
+/* Home.css */
+
+.container {
+  width: 100vw;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.deviceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 300px));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.automationOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.automationModal {
+  background: #fff;
+  padding: 2.5rem 3rem;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90vw;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  font-family: 'Montserrat', sans-serif;
+  color: #222;
+  animation: fadeInScale 0.25s ease forwards;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.automationModal h2 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+  font-size: 1.5rem;
+  text-align: center;
+  color: #333;
+}
+
+.automationModal label {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 0.3rem;
+  display: block;
+}
+
+.automationModal input[type="time"] {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1.5px solid #ddd;
+  transition: border-color 0.3s ease;
+}
+
+.automationModal input[type="time"]:focus {
+  border-color: #4f46e5;
+  outline: none;
+}
+
+.automationModal form > div {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.2rem;
+  gap: 20px;
+}
+
+.automationModal button {
+  flex: 1;
+  padding: 0.55rem 0;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.automationModal button[type="submit"] {
+  background-color: #4f46e5;
+  color: white;
+  margin-right: 10px;
+}
+
+.automationModal button[type="submit"]:hover {
+  background-color: #4338ca;
+}
+
+.automationModal button[type="button"] {
+  background-color: #ddd;
+  color: #555;
+}
+
+.automationModal button[type="button"]:hover {
+  background-color: #bbb;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
+.statusText {
+  margin-left: 1rem;
+  margin-top: 10px;
+}
+
+.sensorData {
+  margin-top: 10px;
+  margin-left: 1rem;
+}

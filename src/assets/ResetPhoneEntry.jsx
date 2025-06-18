@@ -7,29 +7,32 @@ const ResetPhoneEntry = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!phoneNumber) {
-      setError('Please enter your phone number');
-      return;
-    }
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!phoneNumber) {
+    setError('Please enter your phone number');
+    return;
+  }
 
-    try {
-      const res = await fetch('http://localhost:3001/otp/forgot_pass', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber: phoneNumber }),
-      });
+  try {
+    const cleanPhone = phoneNumber.replace(/\D/g, '');
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.msg || 'Failed to send OTP');
+    const res = await fetch('http://localhost:3001/otp/forgot_pass', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: Number(cleanPhone) }),
+    });
 
-      console.error("Res", data)
-      navigate('/verify-number', { state: { phoneNumber, mode: 'reset' } });
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to send OTP');
+
+    navigate('/verify-number', { state: { phoneNumber: cleanPhone, mode: 'reset', otpSent:true, } });
+  } catch (err) {
+    console.error('Error submitting:', err);
+    setError(err.message);
+  }
+};
+
 
   return (
     <div className="wrapper">
