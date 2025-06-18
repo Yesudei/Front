@@ -60,6 +60,7 @@ const Home = () => {
           withCredentials: true,
         }
       );
+      console.log(response.data.data)
       return response.data.data;
     } catch (error) {
       console.error(`Error fetching MQTT data for clientId ${clientId}:`, error);
@@ -143,48 +144,52 @@ const Home = () => {
           marginTop: '20px',
         }}
       >
-        {userData &&
-          userData.user.devices.map((device) => {
-            const deviceData = mqttDataList[device.clientId];
-            const powerState = deviceData?.data?.power || 'off'; 
-            const temp = deviceData?.data?.Temperature || 0;
-            
-            let status = '';
-            if (temp > 26) status = 'Hot';
-            else if (temp >= 16 && temp <= 26) status = 'Normal';
-            else status = 'Cold';
+{userData &&
+  userData.user.devices.map((device) => {
+    const deviceData = mqttDataList[device.clientId];
+    const powerState = deviceData?.status?.power || 'off';
+    const temp = deviceData?.sensor?.data?.Temperature ?? 0;
 
-            return (
-              <Card
-                key={device._id}
-                Icon={() => <span></span>}
-                title={device.clientId}
-                isChecked={powerState === 'on'}
-                onToggle={() => toggleDevice(device.clientId, powerState)}
-                status={status}
-              >
-                {deviceData ? (
-                  <div style={{ marginTop: '10px' }}>
-                    {deviceData.data && (
-                      <div style={{ marginLeft: '1rem' }}>
-                        {Object.entries(deviceData.data)
-                          .filter(
-                            ([key]) => !['_id', '__v', 'Id', 'power'].includes(key)
-                          )
-                          .map(([key, value]) => (
-                            <p key={`${device.clientId}-${key}`}>
-                              <strong>{key}:</strong> {value}
-                            </p>
-                          ))}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <p>Loading data for {device.clientId}...</p>
-                )}
-              </Card>
-            );
-          })}
+    let status = '';
+    if (temp > 26) status = 'Hot';
+    else if (temp >= 16 && temp <= 26) status = 'Normal';
+    else status = 'Cold';
+
+    return (
+      <Card
+        key={device._id}
+        Icon={() => <span></span>}
+        title={device.clientId}
+        isChecked={powerState === 'on'}
+        onToggle={() => toggleDevice(device.clientId, powerState)}
+        status={status}
+      >
+        {deviceData ? (
+          <div style={{ marginTop: '10px' }}>
+            {deviceData.sensor?.data && (
+              <div style={{ marginLeft: '1rem' }}>
+                {Object.entries(deviceData.sensor.data)
+                  .filter(([key]) => !['_id', '__v', 'Id'].includes(key))
+                  .map(([key, value]) => (
+                    <p key={`${device.clientId}-${key}`}>
+                      <strong>{key}:</strong> {value}
+                    </p>
+                  ))}
+              </div>
+            )}
+            {deviceData.status?.message && (
+              <p style={{ marginLeft: '1rem', marginTop: '10px' }}>
+                <strong>Status:</strong> {deviceData.status.message}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p>Loading data for {device.clientId}...</p>
+        )}
+      </Card>
+    );
+  })}
+
       </div>
     </div>
   );
