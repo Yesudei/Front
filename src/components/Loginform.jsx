@@ -56,7 +56,7 @@ const handleLogin = async (e) => {
     const userData = await userRes.json();
     if (!userRes.ok) throw new Error(userData.message || 'Failed to get user data');
 
-    login(token, userData.user.name); // or any field you want  
+    login(data.accessToken, data.refreshToken, userData.user.name); // or any field you want  
     navigate('/');
   } catch (err) {
     setError(err.message);
