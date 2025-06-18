@@ -1,8 +1,8 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { UserProvider, useUser } from './usercontext';
+import { UserProvider, useUser } from './UserContext';
 import Home from './assets/Home';
-import LoginForm from './components/LoginForm';
+import LoginForm from './components/Loginform';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Register from './assets/Register';
