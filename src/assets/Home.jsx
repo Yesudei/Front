@@ -22,9 +22,12 @@ const Home = () => {
           withCredentials: true,
         }
       );
-      const newAccessToken =
-        response.data.accessToken || response.headers['x-access-token'];
+
+      // Get token from either body or header
+      const newAccessToken = response.data.accessToken || response.headers['x-access-token'];
+
       if (!newAccessToken) throw new Error('No access token returned');
+
       setAccessToken(newAccessToken);
       return newAccessToken;
     } catch (error) {
@@ -44,11 +47,7 @@ const Home = () => {
     } catch (error) {
       if (error.response?.status === 401) {
         const newToken = await refreshAccessToken();
-        if (newToken) {
-          await fetchUserData(newToken);
-        } else {
-          console.error('Unable to refresh token');
-        }
+        if (newToken) await fetchUserData(newToken);
       } else {
         console.error('Error fetching user data:', error);
       }
@@ -64,7 +63,6 @@ const Home = () => {
           withCredentials: true,
         }
       );
-      console.log(response.data.data);
       return response.data.data;
     } catch (error) {
       console.error(`Error fetching MQTT data for clientId ${clientId}:`, error);
@@ -84,7 +82,7 @@ const Home = () => {
   const toggleDevice = async (clientId, currentState) => {
     const newState = currentState === 'on' ? 'off' : 'on';
 
-    // Optimistically update UI
+    // Optimistic update
     setMqttDataList((prev) => ({
       ...prev,
       [clientId]: {
@@ -107,7 +105,7 @@ const Home = () => {
       );
     } catch (error) {
       console.error('Error toggling device:', error);
-      // Revert UI on failure
+      // Revert on failure
       setMqttDataList((prev) => ({
         ...prev,
         [clientId]: {
@@ -123,11 +121,7 @@ const Home = () => {
 
   const handleAutomationSubmit = async (e) => {
     e.preventDefault();
-
-    if (!automationDevice) {
-      alert('No device selected');
-      return;
-    }
+    if (!automationDevice) return alert('No device selected');
 
     try {
       const payload = {
@@ -164,10 +158,18 @@ const Home = () => {
       userData &&
       userData.user &&
       userData.user.devices &&
-      userData.user.devices.length > 0
+      userData.user.devices.length > 0 &&
+      accessToken
     ) {
       const clientIds = userData.user.devices.map((device) => device.clientId);
+
       fetchAllMqttData(clientIds, accessToken);
+
+      const intervalId = setInterval(() => {
+        fetchAllMqttData(clientIds, accessToken);
+      }, 10000);
+
+      return () => clearInterval(intervalId);
     }
   }, [userData, accessToken]);
 
@@ -227,14 +229,8 @@ const Home = () => {
       </div>
 
       {automationDevice && (
-        <div
-          className="automationOverlay"
-          onClick={() => setAutomationDevice(null)}
-        >
-          <div
-            className="automationModal"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="automationOverlay" onClick={() => setAutomationDevice(null)}>
+          <div className="automationModal" onClick={(e) => e.stopPropagation()}>
             <h2>Set Automation for {automationDevice.clientId}</h2>
             <form onSubmit={handleAutomationSubmit}>
               <label>Start Time:</label>
@@ -255,10 +251,7 @@ const Home = () => {
               <br />
               <br />
               <button type="submit">Set Automation</button>
-              <button
-                type="button"
-                onClick={() => setAutomationDevice(null)}
-              >
+              <button type="button" onClick={() => setAutomationDevice(null)}>
                 Cancel
               </button>
             </form>
