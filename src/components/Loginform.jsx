@@ -45,19 +45,22 @@ const handleLogin = async (e) => {
 
     const token = data.accessToken;
 
-    // Fetch user data using the token
-    const userRes = await fetch('http://localhost:3001/users/getuser', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: 'include',
-    });
+const { accessToken, refreshToken } = data;
 
-    const userData = await userRes.json();
-    if (!userRes.ok) throw new Error(userData.message || 'Failed to get user data');
+// Fetch user data using the access token
+const userRes = await fetch('http://localhost:3001/users/getuser', {
+  headers: {
+    Authorization: `Bearer ${accessToken}`,
+  },
+  credentials: 'include',
+});
 
-    login(token, userData.user.name); // or any field you want  
-    navigate('/');
+const userData = await userRes.json();
+if (!userRes.ok) throw new Error(userData.message || 'Failed to get user data');
+
+login(accessToken, refreshToken, userData.user.name); // ✅ correct order
+navigate('/');
+
   } catch (err) {
     setError(err.message);
   }
