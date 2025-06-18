@@ -18,7 +18,8 @@ const Home = () => {
           withCredentials: true,
         }
       );
-      const newAccessToken = response.data.accessToken || response.headers['x-access-token'];
+      const newAccessToken =
+        response.data.accessToken || response.headers['x-access-token'];
       if (!newAccessToken) throw new Error('No access token returned');
       setAccessToken(newAccessToken);
       return newAccessToken;
@@ -65,23 +66,46 @@ const Home = () => {
       return null;
     }
   };
-
   const fetchAllMqttData = async (clientIds, token) => {
     const results = {};
-    await Promise.all(
-      clientIds.map(async (id) => {
-        const data = await fetchMqttDataForClient(id, token);
-        if (data) results[id] = data;
-      })
-    );
+    for (const id of clientIds) {
+      const data = await fetchMqttDataForClient(id, token);
+      if (data) results[id] = data;
+    }
     setMqttDataList(results);
   };
 
-  useEffect(() => {
-    if (!accessToken) {
-      console.warn('No access token available, user probably not logged in');
-      return;
+  // Toggle device on/off
+  const toggleDevice = async (clientId, currentState) => {
+    try {
+      const newState = currentState === 'on' ? 'off' : 'on';
+      await axios.post(
+        'http://localhost:3001/mqt/toggle',
+        { clientId, state: newState },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          withCredentials: true,
+        }
+      );
+
+      // Update local state so UI reflects change immediately
+      setMqttDataList((prev) => ({
+        ...prev,
+        [clientId]: {
+          ...prev[clientId],
+          data: {
+            ...prev[clientId]?.data,
+            power: newState,
+          },
+        },
+      }));
+    } catch (error) {
+      console.error('Error toggling device:', error);
     }
+  };
+
+  useEffect(() => {
+    if (!accessToken) return;
     fetchUserData(accessToken);
   }, [accessToken]);
 
@@ -96,63 +120,71 @@ const Home = () => {
       fetchAllMqttData(clientIds, accessToken);
     }
   }, [userData, accessToken]);
-  useEffect(() => {
-  console.log('MQTT data:', mqttDataList);
-}, [mqttDataList]);
-
 
   return (
     <div
       style={{
-        width: '100%',
-        maxWidth: '2000px',
-        margin: '1rem auto',
+        width: '100vw',
+        height: '100vh',
+        overflowY: 'auto',
         padding: '2rem',
+        boxSizing: 'border-box',
       }}
     >
       <h1>User Devices & Latest MQTT Data</h1>
       {!userData && <p>Loading user data...</p>}
-
       {userData && userData.user.devices.length === 0 && <p>No devices found</p>}
 
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-          gap: '20px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 300px))',
+          gap: '15px',
           marginTop: '20px',
         }}
       >
         {userData &&
-          userData.user.devices.map((device) => (
-            <Card
-              key={device._id}
-              Icon={() => <span>📟</span>}
-              title={device.clientId}
-            >
-          {mqttDataList[device.clientId] ? (
-  <div style={{ marginTop: '10px' }}>
-    {mqttDataList[device.clientId].data && (
-      <div style={{ marginLeft: '1rem' }}>
-        {Object.entries(mqttDataList[device.clientId].data)
-          .filter(([key]) => !['_id', '__v'].includes(key))
-          .map(([key, value]) => (
-            <p key={key}>
-              {key}: {value}
-            </p>
-          ))}
-      </div>
-    )}
-    <p><strong>Time:</strong> {new Date(mqttDataList[device.clientId].timestamp).toLocaleString()}</p>
-  </div>
-) : (
-  <p>Loading data...</p>
-)}
+          userData.user.devices.map((device) => {
+            const deviceData = mqttDataList[device.clientId];
+            const powerState = deviceData?.data?.power || 'off'; 
+            const temp = deviceData?.data?.Temperature || 0;
+            
+            let status = '';
+            if (temp > 26) status = 'Hot';
+            else if (temp >= 16 && temp <= 26) status = 'Normal';
+            else status = 'Cold';
 
-
-
-            </Card>
-          ))}
+            return (
+              <Card
+                key={device._id}
+                Icon={() => <span></span>}
+                title={device.clientId}
+                isChecked={powerState === 'on'}
+                onToggle={() => toggleDevice(device.clientId, powerState)}
+                status={status}
+              >
+                {deviceData ? (
+                  <div style={{ marginTop: '10px' }}>
+                    {deviceData.data && (
+                      <div style={{ marginLeft: '1rem' }}>
+                        {Object.entries(deviceData.data)
+                          .filter(
+                            ([key]) => !['_id', '__v', 'Id', 'power'].includes(key)
+                          )
+                          .map(([key, value]) => (
+                            <p key={`${device.clientId}-${key}`}>
+                              <strong>{key}:</strong> {value}
+                            </p>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p>Loading data for {device.clientId}...</p>
+                )}
+              </Card>
+            );
+          })}
       </div>
     </div>
   );

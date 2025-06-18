@@ -145,7 +145,7 @@ body {
 .main-cards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 15px;
   width: 75vw;
   margin: 0 auto;
 }
@@ -161,17 +161,24 @@ body {
   position: relative;
   min-width: 0;
 }
+.card-title{
+  font-size: 1rem;
+}
 .card:first-child {
-  background-color: #2962ff;
+background: #EEAECA;
+background: linear-gradient(nulldeg, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);
 }
 .card:nth-child(2) {
-  background-color: #ff6d00;
+background: #3F5EFB;
+background: linear-gradient(nulldeg, rgba(63, 94, 251, 1) 0%, rgba(252, 70, 107, 1) 100%);
 }
 .card:nth-child(3) {
-  background-color: #2e7d32;
+background: #22C1C3;
+background: linear-gradient(0deg, rgba(34, 193, 195, 1) 0%, rgba(253, 187, 45, 1) 100%);
 }
 .card:nth-child(4) {
-  background-color: #d50000;
+background: #020024;
+background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(9, 9, 121, 1) 35%, rgba(0, 212, 255, 1) 100%);
 }
 .card-top {
   display: flex;
@@ -230,6 +237,9 @@ input:checked + .slider:before {
 .card-bottom h1 {
   margin: 5px 0 0;
   font-size: 20px;
+}
+.card-bottom p{
+  font-size: 14px;
 }
 
 .header-right {
