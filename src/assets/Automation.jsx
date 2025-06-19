@@ -5,17 +5,18 @@ import { useUser } from '../UserContext';
 const API_BASE_URL = 'http://localhost:3001';
 
 const Automation = () => {
-  const { accessToken, userData } = useUser();
+  const { accessToken, userData, isLoading } = useUser();
   const [deviceRules, setDeviceRules] = useState({}); // { clientId: [rules] }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log('Automation useEffect triggered', { accessToken, userData });
+    console.log('Automation useEffect triggered', { accessToken, userData, isLoading });
 
+    if (isLoading) return; // wait for user data to load
     if (!accessToken) return;
-    if (!userData || !userData.user || !userData.user.devices) {
-      // userData not ready yet
+    if (!userData || !userData.devices) {
+      console.log('User data or devices not ready yet');
       return;
     }
 
@@ -25,14 +26,13 @@ const Automation = () => {
 
       try {
         const rulesMap = {};
-        for (const device of userData.user.devices) {
+        for (const device of userData.devices) {
           try {
             const res = await axios.get(`${API_BASE_URL}/mqt/getRule/${device.clientId}`, {
               headers: { Authorization: `Bearer ${accessToken}` },
               withCredentials: true,
             });
 
-            // API might return a single object or an array, normalize to array
             const rules = Array.isArray(res.data) ? res.data : [res.data];
             rulesMap[device.clientId] = rules;
           } catch (err) {
@@ -50,14 +50,14 @@ const Automation = () => {
     };
 
     fetchAllRules();
-  }, [accessToken, userData]);
+  }, [accessToken, userData, isLoading]);
 
+  if (isLoading) return <p>Loading user data...</p>;
   if (loading) return <p>Loading automation timers...</p>;
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
 
-  if (!userData) return <p>Loading user data...</p>;
-  if (!userData.user.devices || userData.user.devices.length === 0)
-    return <p>No devices found for user.</p>;
+  if (!userData) return <p>No user data found.</p>;
+  if (!userData.devices || userData.devices.length === 0) return <p>No devices found for user.</p>;
 
   const hasAnyRules = Object.values(deviceRules).some((rules) => rules.length > 0);
   if (!hasAnyRules) return <p>No automation timers found.</p>;

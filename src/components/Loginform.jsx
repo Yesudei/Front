@@ -55,7 +55,11 @@ const LoginForm = () => {
       const userData = await userRes.json();
       if (!userRes.ok) throw new Error(userData.message || 'Failed to get user data');
 
-      login(token, refresh, userData.user.name); // Make sure this matches your backend response
+      // Save tokens to localStorage here (to match UserContext)
+      localStorage.setItem('accessToken', token);
+      localStorage.setItem('refreshToken', refresh);
+
+      login(token, refresh, userData.user.name);
       navigate('/');
     } catch (err) {
       setError(err.message);
