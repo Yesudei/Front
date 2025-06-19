@@ -6,21 +6,6 @@ import { useParams } from 'react-router-dom';
 const API_BASE_URL = 'http://localhost:3001';
 
 const Automation = () => {
-<<<<<<< Updated upstream
-  const { accessToken, userData, isLoading } = useUser();
-  const [deviceRules, setDeviceRules] = useState({}); // { clientId: [rules] }
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    console.log('Automation useEffect triggered', { accessToken, userData, isLoading });
-
-    if (isLoading) return; // wait for user data to load
-    if (!accessToken) return;
-    if (!userData || !userData.devices) {
-      console.log('User data or devices not ready yet');
-      return;
-=======
   const { accessToken, userData, setAccessToken, refreshToken, logout } = useUser();
   const { clientId } = useParams();
 
@@ -59,7 +44,6 @@ const Automation = () => {
           logout();
         }
       }
->>>>>>> Stashed changes
     }
   }, [accessToken, refreshToken, setAccessToken, logout]);
 
@@ -79,21 +63,6 @@ const Automation = () => {
       const rulesMap = {};
 
       try {
-<<<<<<< Updated upstream
-        const rulesMap = {};
-        for (const device of userData.devices) {
-          try {
-            const res = await axios.get(`${API_BASE_URL}/mqt/getRule/${device.clientId}`, {
-              headers: { Authorization: `Bearer ${accessToken}` },
-              withCredentials: true,
-            });
-
-            const rules = Array.isArray(res.data) ? res.data : [res.data];
-            rulesMap[device.clientId] = rules;
-          } catch (err) {
-            console.error(`Error fetching rules for device ${device.clientId}:`, err.response?.data || err.message);
-            rulesMap[device.clientId] = [];
-=======
         if (clientId) {
           const device = localUserData.user.devices.find((d) => d.clientId === clientId);
           if (!device) {
@@ -127,7 +96,6 @@ const Automation = () => {
               console.error(`Error fetching rules for ${device.clientId}:`, err);
               rulesMap[device.clientId] = [];
             }
->>>>>>> Stashed changes
           }
         }
 
@@ -140,20 +108,6 @@ const Automation = () => {
       }
     };
 
-<<<<<<< Updated upstream
-    fetchAllRules();
-  }, [accessToken, userData, isLoading]);
-
-  if (isLoading) return <p>Loading user data...</p>;
-  if (loading) return <p>Loading automation timers...</p>;
-  if (error) return <p style={{ color: 'red' }}>{error}</p>;
-
-  if (!userData) return <p>No user data found.</p>;
-  if (!userData.devices || userData.devices.length === 0) return <p>No devices found for user.</p>;
-
-  const hasAnyRules = Object.values(deviceRules).some((rules) => rules.length > 0);
-  if (!hasAnyRules) return <p>No automation timers found.</p>;
-=======
     fetchRules();
   }, [accessToken, localUserData, clientId]);
 
@@ -163,7 +117,6 @@ const Automation = () => {
 
   const hasRules = Object.values(deviceRules).some((rules) => rules.length > 0);
   if (!hasRules) return <p>No automation timers found.</p>;
->>>>>>> Stashed changes
 
   return (
     <div style={{ padding: 20 }}>
