@@ -4,39 +4,36 @@ import axios from 'axios';
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  // Use localStorage for accessToken & refreshToken for persistence across tabs
   const [accessToken, setAccessTokenState] = useState(() => {
     const token = localStorage.getItem('accessToken');
-    console.log('Initial accessToken from localStorage:', token);
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`; // ✅ persist after refresh
+    }
     return token || null;
   });
-  const [refreshToken, setRefreshTokenState] = useState(() => {
-    const token = localStorage.getItem('refreshToken');
-    console.log('Initial refreshToken from localStorage:', token);
-    return token || null;
-  });
-  const [username, setUsernameState] = useState(() => {
-    const name = sessionStorage.getItem('username');
-    return name || null;
-  });
+
+  const [refreshToken, setRefreshTokenState] = useState(() => localStorage.getItem('refreshToken') || null);
+  const [username, setUsernameState] = useState(() => sessionStorage.getItem('username') || null);
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Save access token to localStorage consistently
   const setAccessToken = useCallback((token) => {
     setAccessTokenState(token);
-    if (token) localStorage.setItem('accessToken', token);
-    else localStorage.removeItem('accessToken');
+    if (token) {
+      localStorage.setItem('accessToken', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`; // ✅ set for future requests
+    } else {
+      localStorage.removeItem('accessToken');
+      delete axios.defaults.headers.common['Authorization']; // ✅ clean up
+    }
   }, []);
 
-  // Save refresh token to localStorage consistently
   const setRefreshToken = useCallback((token) => {
     setRefreshTokenState(token);
     if (token) localStorage.setItem('refreshToken', token);
     else localStorage.removeItem('refreshToken');
   }, []);
 
-  // Keep username in sessionStorage (cleared on tab close)
   const setUsername = useCallback((name) => {
     setUsernameState(name);
     if (name) sessionStorage.setItem('username', name);
@@ -64,6 +61,7 @@ export const UserProvider = ({ children }) => {
       logout();
       return null;
     }
+
     try {
       const response = await axios.post(
         'http://localhost:3001/users/refresh',
@@ -73,9 +71,11 @@ export const UserProvider = ({ children }) => {
           withCredentials: true,
         }
       );
+
       const newAccessToken = response.data.accessToken;
       if (!newAccessToken) throw new Error('No access token in response');
-      setAccessToken(newAccessToken);
+
+      setAccessToken(newAccessToken); // will also update axios.defaults
       return newAccessToken;
     } catch (error) {
       console.error('Token refresh failed:', error);
@@ -86,30 +86,30 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     const initializeSession = async () => {
-      console.log('Initializing session...');
+      console.log('🔄 Initializing session...');
       if (!refreshToken) {
-        console.log('No refresh token, skipping session initialization');
+        console.log('⚠️ No refresh token, skipping session init');
         setIsLoading(false);
         return;
       }
+
       try {
         const newAccessToken = await refreshAccessToken();
         if (!newAccessToken) throw new Error('Refresh failed');
 
         const userResponse = await axios.get('http://localhost:3001/users/getuser', {
-          headers: { Authorization: `Bearer ${newAccessToken}` },
           withCredentials: true,
         });
 
-        console.log('User data fetched:', userResponse.data);
+        console.log('✅ User data fetched:', userResponse.data);
         setUserData(userResponse.data.user);
         setUsername(userResponse.data.user.name);
       } catch (error) {
-        console.error('Session initialization failed:', error);
+        console.error('❌ Session initialization failed:', error);
         logout();
       } finally {
         setIsLoading(false);
-        console.log('Session initialization finished, isLoading=false');
+        console.log('✅ Session initialization complete');
       }
     };
 
