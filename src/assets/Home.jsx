@@ -320,13 +320,13 @@ const Home = () => {
                       </span>
                     </p>
                   )}
-                 {deviceData.status?.message &&
-                  !deviceData.status.message.startsWith('Power status from stat/POWER') &&
-                  !deviceData.status.message.startsWith('LWT:') && (
-                    <p className="statusText">
-                      🔌 <strong>Power:</strong> {deviceData.status.message}
-                    </p>
-                )}
+                      {deviceData.status?.message && deviceData.status.message.startsWith('LWT:') && (
+                        <p className="lwtStatus">
+                          🔗 {deviceData.status.message.slice(4).trim()}
+                        </p>
+                      )}
+
+
 
                 </div>
               ) : (
