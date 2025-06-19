@@ -293,27 +293,39 @@ const Home = () => {
                   {deviceData.sensor?.data && (
                     <div>
                       {Object.entries(deviceData.sensor.data)
-                        .filter(([key]) => !['_id', '__v', 'Id'].includes(key))
-                        .map(([key, value]) => (
-                          <p key={`${device.clientId}-${key}`}>
-                            <strong>{key}:</strong> {value}
-                          </p>
-                        ))}
+                      .filter(
+                          ([key, value]) =>
+                            !['_id', '__v', 'Id'].includes(key) &&
+                            !(typeof value === 'string' && value.startsWith('Power status from stat/POWER'))
+                        )
+                        .map(([key, value]) => {
+                          const labelIcons = {
+                            Temperature: '🌡️',
+                            Humidity: '💧',
+                            DewPoint: '❄️',
+                          };
+                          return (
+                            <p key={`${device.clientId}-${key}`}>
+                              <strong>{labelIcons[key] || key}:</strong> {value}
+                            </p>
+                          );
+                        })}
                     </div>
                   )}
                   {deviceData.automationRule && (
                     <p className="automationInfo">
-                      <strong>Automation:</strong>{' '}
-                      <span style={{ color: deviceData.automationRule ? 'green' : 'red' }}>
+                      ⚙️ <strong>Automation:</strong>{' '}
+                      <span style={{ color: deviceData.automationRule ? 'limegreen' : 'red' }}>
                         {deviceData.automationRule ? 'ON' : 'OFF'}
                       </span>
                     </p>
                   )}
-                  {deviceData.status?.message && (
-                    <p className="statusText">
-                      <strong>Status:</strong> {deviceData.status.message}
-                    </p>
-                  )}
+                  {deviceData.status?.message &&
+                    !deviceData.status.message.startsWith('Power status from stat/POWER') && (
+                      <p className="statusText">
+                        🔌 <strong>Power:</strong> {deviceData.status.message}
+                      </p>
+                    )}
                 </div>
               ) : (
                 <p>Loading data for {device.clientId}...</p>
