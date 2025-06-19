@@ -4,42 +4,28 @@ import axios from 'axios';
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [accessToken, setAccessTokenState] = useState(() => {
-    return sessionStorage.getItem('accessToken') || null;
-  });
-  const [refreshToken, setRefreshTokenState] = useState(() => {
-    return localStorage.getItem('refreshToken') || null;
-  });
-  const [username, setUsernameState] = useState(() => {
-    return sessionStorage.getItem('username') || null;
-  });
+  const [accessToken, setAccessTokenState] = useState(() => sessionStorage.getItem('accessToken') || null);
+  const [refreshToken, setRefreshTokenState] = useState(() => localStorage.getItem('refreshToken') || null);
+  const [username, setUsernameState] = useState(() => sessionStorage.getItem('username') || null);
+  const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const setAccessToken = useCallback((token) => {
     setAccessTokenState(token);
-    if (token) {
-      sessionStorage.setItem('accessToken', token);
-    } else {
-      sessionStorage.removeItem('accessToken');
-    }
+    if (token) sessionStorage.setItem('accessToken', token);
+    else sessionStorage.removeItem('accessToken');
   }, []);
 
   const setRefreshToken = useCallback((token) => {
     setRefreshTokenState(token);
-    if (token) {
-      localStorage.setItem('refreshToken', token);
-    } else {
-      localStorage.removeItem('refreshToken');
-    }
+    if (token) localStorage.setItem('refreshToken', token);
+    else localStorage.removeItem('refreshToken');
   }, []);
 
   const setUsername = useCallback((name) => {
     setUsernameState(name);
-    if (name) {
-      sessionStorage.setItem('username', name);
-    } else {
-      sessionStorage.removeItem('username');
-    }
+    if (name) sessionStorage.setItem('username', name);
+    else sessionStorage.removeItem('username');
   }, []);
 
   const login = useCallback((newAccessToken, newRefreshToken, name) => {
@@ -49,34 +35,28 @@ export const UserProvider = ({ children }) => {
   }, [setAccessToken, setRefreshToken, setUsername]);
 
   const logout = useCallback(() => {
-    // Client-side only cleanup
     setAccessToken(null);
     setRefreshToken(null);
     setUsername(null);
+    setUserData(null);
     sessionStorage.clear();
     localStorage.removeItem('refreshToken');
-  }, [setAccessToken, setRefreshToken, setUsername]);
+  }, []);
 
   const refreshAccessToken = useCallback(async () => {
     if (!refreshToken) {
       logout();
       return null;
     }
-
     try {
       const response = await axios.post(
         'http://localhost:3001/users/refresh',
         {},
-        {
-          headers: { 'x-refresh-token': refreshToken },
-          withCredentials: true,
-        }
+        { headers: { 'x-refresh-token': refreshToken }, withCredentials: true }
       );
 
       const newAccessToken = response.data.accessToken;
-      if (!newAccessToken) {
-        throw new Error('No access token in response');
-      }
+      if (!newAccessToken) throw new Error('No access token in response');
 
       setAccessToken(newAccessToken);
       return newAccessToken;
@@ -89,41 +69,23 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     const initializeSession = async () => {
-      // If we have an access token, verify it's still valid
-      if (accessToken) {
-        try {
-          await axios.get('http://localhost:3001/users/validate', {
-            headers: { Authorization: `Bearer ${accessToken}` },
-            withCredentials: true,
-          });
-          setIsLoading(false);
-          return;
-        } catch (error) {
-          console.log('Access token invalid, attempting refresh...');
-        }
-      }
-
-      // If no refresh token, we're logged out
       if (!refreshToken) {
         setIsLoading(false);
         return;
       }
 
-      // Attempt to refresh the access token
       try {
         const newAccessToken = await refreshAccessToken();
-        if (!newAccessToken) {
-          throw new Error('Refresh failed');
-        }
+        if (!newAccessToken) throw new Error('Refresh failed');
 
-        // Fetch user data if we don't have username
-        if (!username) {
-          const userResponse = await axios.get('http://localhost:3001/users/getuser', {
-            headers: { Authorization: `Bearer ${newAccessToken}` },
-            withCredentials: true,
-          });
-          setUsername(userResponse.data.user.name);
-        }
+        // Fetch full user data here, save it in userData state
+        const userResponse = await axios.get('http://localhost:3001/users/getuser', {
+          headers: { Authorization: `Bearer ${newAccessToken}` },
+          withCredentials: true,
+        });
+
+        setUserData(userResponse.data.user);
+        setUsername(userResponse.data.user.name);
       } catch (error) {
         console.error('Session initialization failed:', error);
         logout();
@@ -133,7 +95,7 @@ export const UserProvider = ({ children }) => {
     };
 
     initializeSession();
-  }, [accessToken, refreshToken, username, refreshAccessToken, logout, setUsername]);
+  }, [refreshToken, refreshAccessToken, logout, setUsername]);
 
   return (
     <UserContext.Provider
@@ -141,6 +103,7 @@ export const UserProvider = ({ children }) => {
         accessToken,
         refreshToken,
         username,
+        userData,       // <-- provide full user data here
         isLoading,
         login,
         logout,
@@ -156,8 +119,6 @@ export const UserProvider = ({ children }) => {
 
 export const useUser = () => {
   const context = useContext(UserContext);
-  if (!context) {
-    throw new Error('useUser must be used within a UserProvider');
-  }
+  if (!context) throw new Error('useUser must be used within a UserProvider');
   return context;
 };

@@ -9,6 +9,7 @@ import Register from './assets/Register';
 import VerifyNumber from './assets/Verifynumber';
 import ResetPassword from './assets/ResetPassword';
 import ResetPhoneEntry from './assets/ResetPhoneEntry';
+import Automation from './assets/Automation';
 
 const AppRoutes = () => {
   const { isLoading } = useUser();
@@ -24,7 +25,7 @@ const AppRoutes = () => {
       <Route path="/verify-number" element={<VerifyNumber />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/reset-phone" element={<ResetPhoneEntry />} />
-
+      <Route path="/automation" element={<Automation/>} />
       <Route
         path="/"
         element={

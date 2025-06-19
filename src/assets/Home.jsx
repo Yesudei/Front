@@ -2,9 +2,10 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { useUser } from '../UserContext';
 import Card from './Card';
+import { useNavigate } from 'react-router-dom';
 import './Home.css';
 
-const API_BASE_URL =  'http://localhost:3001';
+const API_BASE_URL = 'http://localhost:3001';
 
 const Home = () => {
   const { accessToken, refreshToken, setAccessToken, logout } = useUser();
@@ -18,7 +19,6 @@ const Home = () => {
   const refreshingToken = useRef(false);
   const refreshSubscribers = useRef([]);
 
-
   const onAccessTokenRefreshed = useCallback((newToken) => {
     refreshSubscribers.current.forEach((callback) => callback(newToken));
     refreshSubscribers.current = [];
@@ -30,7 +30,6 @@ const Home = () => {
 
   const refreshAccessToken = useCallback(async () => {
     if (refreshingToken.current) {
-      // Return a promise that resolves when refresh completes
       return new Promise((resolve) => {
         addRefreshSubscriber(resolve);
       });
@@ -65,7 +64,6 @@ const Home = () => {
     }
   }, [refreshToken, setAccessToken, logout, addRefreshSubscriber, onAccessTokenRefreshed]);
 
-  // Generic axios GET wrapper with automatic token refresh on 401
   const axiosGetWithAuth = useCallback(
     async (url, token) => {
       try {
@@ -78,7 +76,6 @@ const Home = () => {
         if (error.response?.status === 401) {
           const newToken = await refreshAccessToken();
           if (newToken) {
-            // Retry the request with new token
             const retryResponse = await axios.get(url, {
               headers: { Authorization: `Bearer ${newToken}` },
               withCredentials: true,
@@ -92,7 +89,6 @@ const Home = () => {
     [refreshAccessToken]
   );
 
-  // Fetch user data
   const fetchUserData = useCallback(
     async (token) => {
       try {
@@ -105,24 +101,42 @@ const Home = () => {
     [axiosGetWithAuth]
   );
 
-  // Fetch MQTT data for one clientId
+  const fetchAutomationRule = useCallback(async (clientId) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/mqt/getRule/${clientId}`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          withCredentials: true,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching automation rule:', error);
+      return null;
+    }
+  }, [accessToken]);
+
   const fetchMqttDataForClient = useCallback(
     async (clientId, token) => {
       try {
-        const data = await axiosGetWithAuth(
-          `${API_BASE_URL}/mqt/data?clientId=${encodeURIComponent(clientId)}`,
-          token
-        );
-        return data.data;
+        const [mqttRes, ruleRes] = await Promise.all([
+          axiosGetWithAuth(`${API_BASE_URL}/mqt/data?clientId=${encodeURIComponent(clientId)}`, token),
+          axiosGetWithAuth(`${API_BASE_URL}/mqt/getRule/${clientId}`, token),
+        ]);
+
+        return {
+          ...mqttRes.data,
+          automationRule: ruleRes,
+        };
       } catch (error) {
-        console.error(`Error fetching MQTT data for clientId ${clientId}:`, error);
+        console.error(`Error fetching data for clientId ${clientId}:`, error);
         return null;
       }
     },
     [axiosGetWithAuth]
   );
 
-  // Fetch MQTT data for all clientIds in parallel and update state once
   const fetchAllMqttData = useCallback(
     async (clientIds, token) => {
       try {
@@ -144,12 +158,10 @@ const Home = () => {
     [fetchMqttDataForClient]
   );
 
-  // Toggle device power with optimistic update and rollback on failure
   const toggleDevice = useCallback(
     async (clientId, currentState) => {
       const newState = currentState === 'on' ? 'off' : 'on';
 
-      // Optimistic update
       setMqttDataList((prev) => ({
         ...prev,
         [clientId]: {
@@ -171,7 +183,6 @@ const Home = () => {
           }
         );
 
-        // Fetch fresh data after toggle
         const freshData = await fetchMqttDataForClient(clientId, accessToken);
         if (freshData && isMounted.current) {
           setMqttDataList((prev) => ({
@@ -181,7 +192,6 @@ const Home = () => {
         }
       } catch (error) {
         console.error('Error toggling device:', error);
-        // Rollback optimistic update
         setMqttDataList((prev) => ({
           ...prev,
           [clientId]: {
@@ -197,7 +207,6 @@ const Home = () => {
     [accessToken, fetchMqttDataForClient]
   );
 
-  // Submit automation settings
   const handleAutomationSubmit = useCallback(
     async (e) => {
       e.preventDefault();
@@ -215,7 +224,6 @@ const Home = () => {
           `${API_BASE_URL}/mqt/automation/${automationDevice.clientId}`,
           payload,
           {
-            headers: { Authorization: `Bearer ${accessToken}` },
             withCredentials: true,
           }
         );
@@ -227,10 +235,9 @@ const Home = () => {
         alert('Failed to save automation settings.');
       }
     },
-    [accessToken, automationDevice, startTime, endTime]
+    [automationDevice, startTime, endTime]
   );
 
-  // On mount/unmount
   useEffect(() => {
     isMounted.current = true;
     return () => {
@@ -238,7 +245,6 @@ const Home = () => {
     };
   }, []);
 
-  // Fetch user data on token change
   useEffect(() => {
     if (accessToken) {
       fetchUserData(accessToken);
@@ -247,15 +253,11 @@ const Home = () => {
     }
   }, [accessToken, fetchUserData]);
 
-  // Fetch MQTT data periodically when user data changes
   useEffect(() => {
     if (userData?.user?.devices?.length > 0 && accessToken) {
       const clientIds = userData.user.devices.map((d) => d.clientId);
-
-      // Initial fetch
       fetchAllMqttData(clientIds, accessToken);
 
-      // Polling interval
       const intervalId = setInterval(() => {
         fetchAllMqttData(clientIds, accessToken);
       }, 10000);
@@ -266,12 +268,12 @@ const Home = () => {
     }
   }, [userData, accessToken, fetchAllMqttData]);
 
-  // Helper for temperature status
   const getTempStatus = (temp) => {
     if (temp > 26) return 'Hot';
     if (temp >= 16) return 'Normal';
     return 'Cold';
   };
+  const navigate = useNavigate();
 
   return (
     <div className="container">
@@ -295,7 +297,17 @@ const Home = () => {
               isChecked={powerState === 'on'}
               onToggle={() => toggleDevice(device.clientId, powerState)}
               status={status}
-              onAutomationClick={() => setAutomationDevice(device)}
+              onAutomationClick={async () => {
+                const rule = await fetchAutomationRule(device.clientId);
+                if (rule) {
+                  setStartTime(rule.onTime || '');
+                  setEndTime(rule.offTime || '');
+                } else {
+                  setStartTime('');
+                  setEndTime('');
+                }
+                setAutomationDevice(device);
+              }}
             >
               {deviceData ? (
                 <div className="sensorData">
@@ -309,6 +321,15 @@ const Home = () => {
                           </p>
                         ))}
                     </div>
+                  )}
+                  {deviceData.automationRule && (
+<p className="automationInfo">
+  <strong>Automation:</strong>{' '}
+  <span style={{ color: deviceData.automationRule ? 'green' : 'red' }}>
+    {deviceData.automationRule ? 'ON' : 'OFF'}
+  </span>
+</p>
+
                   )}
                   {deviceData.status?.message && (
                     <p className="statusText">
@@ -358,6 +379,17 @@ const Home = () => {
               <button type="button" onClick={() => setAutomationDevice(null)}>
                 Cancel
               </button>
+              <button
+  type="button"
+  className="viewTimersBtn"
+  onClick={() => {
+    setAutomationDevice(null);
+    navigate('/Automation');
+  }}
+>
+  View All Timers
+</button>
+
             </form>
           </div>
         </div>
