@@ -10,7 +10,6 @@ function Card({
   isChecked,
   onAutomationClick,
 }) {
-  // Emoji for temperature status
   const statusEmoji = {
     Hot: '🔥',
     Normal: '✅',
@@ -22,11 +21,7 @@ function Card({
       <div className='card-top'>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Icon className='card-icon' />
-          {status && (
-            <span style={{ fontSize: '1.3rem' }}>
-              {statusEmoji[status]}
-            </span>
-          )}
+          {status && <span style={{ fontSize: '1.3rem' }}>{statusEmoji[status]}</span>}
         </div>
         <h3 className='card-title'>{title}</h3>
         <Switch
@@ -41,17 +36,15 @@ function Card({
       <div className='card-bottom'>
         <div className='card-metrics'>
           {children}
+          {/* 👇 Automation ON text moved inside the card */}
         </div>
         <div className='card-button'>
-          <button
-            className='automation-btn'
-            onClick={onAutomationClick}
-          >
+          <button className='automation-btn' onClick={onAutomationClick}>
             Automation
           </button>
         </div>
       </div>
-    </div> // ✅ This was missing
+    </div>
   );
 }
 
