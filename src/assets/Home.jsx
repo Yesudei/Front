@@ -9,7 +9,6 @@ const API_BASE_URL = 'http://localhost:3001';
 
 const Home = () => {
   const { accessToken, refreshToken, setAccessToken, logout } = useUser();
-
   const [userData, setUserData] = useState(null);
   const [mqttDataList, setMqttDataList] = useState({});
   const [automationDevice, setAutomationDevice] = useState(null);
@@ -18,6 +17,7 @@ const Home = () => {
   const isMounted = useRef(true);
   const refreshingToken = useRef(false);
   const refreshSubscribers = useRef([]);
+  const navigate = useNavigate();
 
   const onAccessTokenRefreshed = useCallback((newToken) => {
     refreshSubscribers.current.forEach((callback) => callback(newToken));
@@ -34,8 +34,8 @@ const Home = () => {
         addRefreshSubscriber(resolve);
       });
     }
-    refreshingToken.current = true;
 
+    refreshingToken.current = true;
     try {
       const response = await axios.post(
         `${API_BASE_URL}/users/refresh`,
@@ -46,14 +46,11 @@ const Home = () => {
         }
       );
 
-      const newAccessToken =
-        response.data.accessToken || response.headers['x-access-token'];
-
+      const newAccessToken = response.data.accessToken || response.headers['x-access-token'];
       if (!newAccessToken) throw new Error('No access token returned');
 
       setAccessToken(newAccessToken);
       onAccessTokenRefreshed(newAccessToken);
-
       return newAccessToken;
     } catch (error) {
       console.error('Error refreshing token:', error);
@@ -89,17 +86,14 @@ const Home = () => {
     [refreshAccessToken]
   );
 
-  const fetchUserData = useCallback(
-    async (token) => {
-      try {
-        const data = await axiosGetWithAuth(`${API_BASE_URL}/users/getuser`, token);
-        if (isMounted.current) setUserData(data);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    },
-    [axiosGetWithAuth]
-  );
+  const fetchUserData = useCallback(async (token) => {
+    try {
+      const data = await axiosGetWithAuth(`${API_BASE_URL}/users/getuser`, token);
+      if (isMounted.current) setUserData(data);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  }, [axiosGetWithAuth]);
 
   const fetchAutomationRule = useCallback(async (clientId) => {
     try {
@@ -117,126 +111,112 @@ const Home = () => {
     }
   }, [accessToken]);
 
-  const fetchMqttDataForClient = useCallback(
-    async (clientId, token) => {
-      try {
-        const [mqttRes, ruleRes] = await Promise.all([
-          axiosGetWithAuth(`${API_BASE_URL}/mqt/data?clientId=${encodeURIComponent(clientId)}`, token),
-          axiosGetWithAuth(`${API_BASE_URL}/mqt/getRule/${clientId}`, token),
-        ]);
+  const fetchMqttDataForClient = useCallback(async (clientId, token) => {
+    try {
+      const [mqttRes, ruleRes] = await Promise.all([
+        axiosGetWithAuth(`${API_BASE_URL}/mqt/data?clientId=${encodeURIComponent(clientId)}`, token),
+        axiosGetWithAuth(`${API_BASE_URL}/mqt/getRule/${clientId}`, token),
+      ]);
 
-        return {
-          ...mqttRes.data,
-          automationRule: ruleRes,
-        };
-      } catch (error) {
-        console.error(`Error fetching data for clientId ${clientId}:`, error);
-        return null;
+      return {
+        ...mqttRes.data,
+        automationRule: ruleRes,
+      };
+    } catch (error) {
+      console.error(`Error fetching data for clientId ${clientId}:`, error);
+      return null;
+    }
+  }, [axiosGetWithAuth]);
+
+  const fetchAllMqttData = useCallback(async (clientIds, token) => {
+    try {
+      const results = await Promise.all(
+        clientIds.map((id) => fetchMqttDataForClient(id, token))
+      );
+
+      if (!isMounted.current) return;
+
+      const dataMap = {};
+      clientIds.forEach((id, idx) => {
+        if (results[idx]) dataMap[id] = results[idx];
+      });
+      setMqttDataList(dataMap);
+    } catch (error) {
+      console.error('Error fetching all MQTT data:', error);
+    }
+  }, [fetchMqttDataForClient]);
+
+  const toggleDevice = useCallback(async (clientId, currentState) => {
+    const newState = currentState === 'on' ? 'off' : 'on';
+
+    setMqttDataList((prev) => ({
+      ...prev,
+      [clientId]: {
+        ...prev[clientId],
+        status: {
+          ...prev[clientId]?.status,
+          power: newState,
+        },
+      },
+    }));
+
+    try {
+      await axios.post(
+        `${API_BASE_URL}/mqt/toggle`,
+        { clientId, state: newState },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          withCredentials: true,
+        }
+      );
+
+      const freshData = await fetchMqttDataForClient(clientId, accessToken);
+      if (freshData && isMounted.current) {
+        setMqttDataList((prev) => ({
+          ...prev,
+          [clientId]: freshData,
+        }));
       }
-    },
-    [axiosGetWithAuth]
-  );
-
-  const fetchAllMqttData = useCallback(
-    async (clientIds, token) => {
-      try {
-        const results = await Promise.all(
-          clientIds.map((id) => fetchMqttDataForClient(id, token))
-        );
-
-        if (!isMounted.current) return;
-
-        const dataMap = {};
-        clientIds.forEach((id, idx) => {
-          if (results[idx]) dataMap[id] = results[idx];
-        });
-        setMqttDataList(dataMap);
-      } catch (error) {
-        console.error('Error fetching all MQTT data:', error);
-      }
-    },
-    [fetchMqttDataForClient]
-  );
-
-  const toggleDevice = useCallback(
-    async (clientId, currentState) => {
-      const newState = currentState === 'on' ? 'off' : 'on';
-
+    } catch (error) {
+      console.error('Error toggling device:', error);
       setMqttDataList((prev) => ({
         ...prev,
         [clientId]: {
           ...prev[clientId],
           status: {
             ...prev[clientId]?.status,
-            power: newState,
+            power: currentState,
           },
         },
       }));
+    }
+  }, [accessToken, fetchMqttDataForClient]);
 
-      try {
-        await axios.post(
-          `${API_BASE_URL}/mqt/toggle`,
-          { clientId, state: newState },
-          {
-            headers: { Authorization: `Bearer ${accessToken}` },
-            withCredentials: true,
-          }
-        );
+  const handleAutomationSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    if (!automationDevice) return alert('No device selected');
 
-        const freshData = await fetchMqttDataForClient(clientId, accessToken);
-        if (freshData && isMounted.current) {
-          setMqttDataList((prev) => ({
-            ...prev,
-            [clientId]: freshData,
-          }));
-        }
-      } catch (error) {
-        console.error('Error toggling device:', error);
-        setMqttDataList((prev) => ({
-          ...prev,
-          [clientId]: {
-            ...prev[clientId],
-            status: {
-              ...prev[clientId]?.status,
-              power: currentState,
-            },
-          },
-        }));
-      }
-    },
-    [accessToken, fetchMqttDataForClient]
-  );
+    try {
+      const payload = {
+        topic: `cmnd/${automationDevice.clientId}/POWER`,
+        onTime: startTime,
+        offTime: endTime,
+        timezone: 'Asia/Ulaanbaatar',
+      };
 
-  const handleAutomationSubmit = useCallback(
-    async (e) => {
-      e.preventDefault();
-      if (!automationDevice) return alert('No device selected');
+      await axios.post(
+        `${API_BASE_URL}/mqt/automation/${automationDevice.clientId}`,
+        payload,
+        { withCredentials: true }
+      );
 
-      try {
-        const payload = {
-          topic: `cmnd/${automationDevice.clientId}/POWER`,
-          onTime: startTime,
-          offTime: endTime,
-          timezone: 'Asia/Ulaanbaatar',
-        };
-
-        await axios.post(
-          `${API_BASE_URL}/mqt/automation/${automationDevice.clientId}`,
-          payload,
-          {
-            withCredentials: true,
-          }
-        );
-
-        alert('Automation settings saved successfully!');
-        setAutomationDevice(null);
-      } catch (error) {
-        console.error('Error setting automation:', error);
-        alert('Failed to save automation settings.');
-      }
-    },
-    [automationDevice, startTime, endTime]
-  );
+      alert('Automation settings saved successfully!');
+      setAutomationDevice(null);
+    } catch (error) {
+      console.error('Error setting automation:', error);
+      alert('Failed to save automation settings.');
+    }
+  }, [automationDevice, startTime, endTime]);
 
   useEffect(() => {
     isMounted.current = true;
@@ -273,7 +253,6 @@ const Home = () => {
     if (temp >= 16) return 'Normal';
     return 'Cold';
   };
-  const navigate = useNavigate();
 
   return (
     <div className="container">
@@ -292,7 +271,7 @@ const Home = () => {
           return (
             <Card
               key={device._id}
-              Icon={() => <span aria-hidden="true"></span>}
+              Icon={() => <span />}
               title={device.clientId}
               isChecked={powerState === 'on'}
               onToggle={() => toggleDevice(device.clientId, powerState)}
@@ -323,13 +302,12 @@ const Home = () => {
                     </div>
                   )}
                   {deviceData.automationRule && (
-<p className="automationInfo">
-  <strong>Automation:</strong>{' '}
-  <span style={{ color: deviceData.automationRule ? 'green' : 'red' }}>
-    {deviceData.automationRule ? 'ON' : 'OFF'}
-  </span>
-</p>
-
+                    <p className="automationInfo">
+                      <strong>Automation:</strong>{' '}
+                      <span style={{ color: deviceData.automationRule ? 'green' : 'red' }}>
+                        {deviceData.automationRule ? 'ON' : 'OFF'}
+                      </span>
+                    </p>
                   )}
                   {deviceData.status?.message && (
                     <p className="statusText">
@@ -380,16 +358,15 @@ const Home = () => {
                 Cancel
               </button>
               <button
-  type="button"
-  className="viewTimersBtn"
-  onClick={() => {
-    setAutomationDevice(null);
-    navigate('/Automation');
-  }}
->
-  View All Timers
-</button>
-
+                type="button"
+                className="viewTimersBtn"
+                onClick={() => {
+                  setAutomationDevice(null);
+                  navigate(`/Automation/${automationDevice.clientId}`);
+                }}
+              >
+                View All Timers
+              </button>
             </form>
           </div>
         </div>

@@ -25,7 +25,8 @@ const AppRoutes = () => {
       <Route path="/verify-number" element={<VerifyNumber />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/reset-phone" element={<ResetPhoneEntry />} />
-      <Route path="/automation" element={<Automation/>} />
+  <Route path="/Automation" element={<Automation />} />
+  <Route path="/Automation/:clientId" element={<Automation />} />
       <Route
         path="/"
         element={
