@@ -17,29 +17,26 @@ function Card({
   };
 
   return (
-    <div className='card'>
-      <div className='card-top'>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Icon className='card-icon' />
-          {status && <span style={{ fontSize: '1.3rem' }}>{statusEmoji[status]}</span>}
+    <div className="card">
+      <div className="card-top">
+        <div className="card-header">
+          {Icon && <Icon className="card-icon" />}
+          {status && <span className="status-emoji">{statusEmoji[status]}</span>}
         </div>
-        <h3 className='card-title'>{title}</h3>
+        <h3 className="card-title">{title}</h3>
         <Switch
           checked={isChecked}
           onChange={onToggle}
-          className='antd-switch'
+          className="antd-switch"
           checkedChildren="ON"
           unCheckedChildren="OFF"
         />
       </div>
 
-      <div className='card-bottom'>
-        <div className='card-metrics'>
-          {children}
-          {/* 👇 Automation ON text moved inside the card */}
-        </div>
-        <div className='card-button'>
-          <button className='automation-btn' onClick={onAutomationClick}>
+      <div className="card-bottom">
+        <div className="card-metrics">{children}</div>
+        <div className="card-button">
+          <button className="automation-btn" onClick={onAutomationClick}>
             Automation
           </button>
         </div>
