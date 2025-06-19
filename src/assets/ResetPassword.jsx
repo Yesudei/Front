@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../components/loginform.css';
 
+const API_BASE_URL = 'http://localhost:3001';
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
@@ -26,7 +27,7 @@ const ResetPassword = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:3001/otp/reset_password', {
+      const res = await fetch(`${API_BASE_URL}/otp/reset_password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phoneNumber, newPassword }),

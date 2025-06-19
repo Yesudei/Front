@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../components/loginform.css';
 
+const API_BASE_URL = 'http://localhost:3001';
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const handleRegister = async (e) => {
   }
 
   try {
-    const response = await fetch('http://localhost:3001/users/register', {
+    const response = await fetch(`${API_BASE_URL}/users/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -40,7 +41,6 @@ const handleRegister = async (e) => {
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Registration failed');
 
-    // Redirect to verify-number page with phone number
     navigate('/verify-number', { state: { phoneNumber } });
   } catch (err) {
     setError(err.message);

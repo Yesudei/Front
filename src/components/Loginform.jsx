@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../UserContext';
 import './loginform.css';
 
+const API_BASE_URL = 'http://localhost:3001';
 const LoginForm = () => {
   const navigate = useNavigate();
   const { login, accessToken, username } = useUser();
@@ -30,7 +31,7 @@ const LoginForm = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:3001/users/login', {
+      const response = await fetch(`${API_BASE_URL}/users/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -45,7 +46,7 @@ const LoginForm = () => {
       const token = data.accessToken;
       const refresh = data.refreshToken;
 
-      const userRes = await fetch('http://localhost:3001/users/getuser', {
+      const userRes = await fetch(`${API_BASE_URL}/users/getuser`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
