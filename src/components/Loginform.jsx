@@ -43,21 +43,11 @@ const LoginForm = () => {
         body: JSON.stringify({ email, password }),
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', [...response.headers.entries()]); 
-
       const data = await response.json();
-
-      console.log('Response body data:', data);
-
       if (!response.ok) throw new Error(data.message || 'Login failed');
 
       const accessToken = data.accessToken;
       const refreshToken = response.headers.get('x-refresh-token');
-
-
-      console.log('Extracted accessToken:', accessToken);
-      console.log('Extracted refreshToken:', refreshToken);
 
       if (!accessToken || !refreshToken) {
         throw new Error('Tokens not returned from server');
@@ -87,54 +77,68 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="wrapper">
-      <div className="form-header">
-        <h1>Login</h1>
-        <span className="close-btn" onClick={() => window.close()} role="button" tabIndex={0}>
-          ×
-        </span>
+    <div className="login-page">
+      <div className="wrapper">
+        <div className="form-header">
+          <h1>Login</h1>
+          <span
+            className="close-btn"
+            onClick={() => window.close()}
+            role="button"
+            tabIndex={0}
+          >
+            ×
+          </span>
+        </div>
+        <form onSubmit={handleLogin}>
+          <div className="input-box">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="input-box">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          {error && <p className="error-message">{error}</p>}
+          <div className="remember-forget">
+            <p>
+              <a
+                onClick={() => navigate('/reset-phone')}
+                style={{ cursor: 'pointer' }}
+              >
+                Forgot password?
+              </a>
+            </p>
+          </div>
+          <button type="submit" className="login-btn">
+            Login
+          </button>
+          <div className="register-link">
+            <p>
+              Don't have an account?{' '}
+              <a
+                onClick={() => navigate('/register')}
+                role="button"
+                style={{ cursor: 'pointer' }}
+              >
+                Register
+              </a>
+            </p>
+          </div>
+        </form>
       </div>
-      <form onSubmit={handleLogin}>
-        <div className="input-box">
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div className="input-box">
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        {error && <p className="error-message">{error}</p>}
-        <div className="remember-forget">
-          <p>
-            <a onClick={() => navigate('/reset-phone')} style={{ cursor: 'pointer' }}>
-              Forgot password?
-            </a>
-          </p>
-        </div>
-        <button type="submit" className="login-btn">
-          Login
-        </button>
-        <div className="register-link">
-          <p>
-            Don't have an account?{' '}
-            <a onClick={() => navigate('/register')} role="button" style={{ cursor: 'pointer' }}>
-              Register
-            </a>
-          </p>
-        </div>
-      </form>
     </div>
   );
 };
