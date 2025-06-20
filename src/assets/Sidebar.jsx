@@ -4,6 +4,7 @@ import { FaHome } from 'react-icons/fa';
 import { AiOutlineThunderbolt } from 'react-icons/ai';
 import { CgProfile } from 'react-icons/cg';
 import { LuListTodo } from 'react-icons/lu';
+import '../CSS/Sidebar.css';
 
 function Sidebar() {
   const [showList, setShowList] = useState(false);

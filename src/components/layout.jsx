@@ -2,6 +2,7 @@ import React from 'react';
 import Header from '../assets/Header';
 import Sidebar from '../assets/Sidebar';
 import { Outlet } from 'react-router-dom';
+import Taskbar from '../assets/Taskbar';
 import '../App.css';
 
 function Layout() {
@@ -12,9 +13,11 @@ function Layout() {
       <main className="main-container">
         <Outlet />
       </main>
-   </div>
+      <div className="taskbar-container">
+        <Taskbar />
+      </div>
+    </div>
   );
 }
 
 export default Layout;
-  

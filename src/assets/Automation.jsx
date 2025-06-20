@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { useUser } from '../UserContext';
 import { useParams } from 'react-router-dom';
-import './automation.css';
+import '../CSS/automation.css';
 
 const API_BASE_URL = 'http://localhost:3001';
 

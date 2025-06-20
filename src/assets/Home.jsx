@@ -3,7 +3,8 @@ import axios from 'axios';
 import { useUser } from '../UserContext';
 import Card from './Card';
 import { useNavigate } from 'react-router-dom';
-import './Home.css';
+import '../CSS/Home.css';
+import Taskbar from './Taskbar';
 
 const API_BASE_URL = 'http://localhost:3001';
 
@@ -95,7 +96,6 @@ const Home = () => {
       console.error('Error fetching user data:', error);
     }
   }, [axiosGetWithAuth]);
-
   const fetchAutomationRule = useCallback(async (clientId) => {
     try {
       const response = await axios.get(
@@ -261,127 +261,79 @@ const Home = () => {
   }
 
   return (
-    <div className="container">
-      <h1>User Devices & Latest MQTT Data</h1>
+    <div className="home-layout">
+      <div className="main-content">
+        <h1>User Devices & Latest MQTT Data</h1>
 
-      {!userData && <p>Loading user data...</p>}
-      {userData && userData.user.devices.length === 0 && <p>No devices found</p>}
+        {!userData && <p>Loading user data...</p>}
+        {userData && userData.user.devices.length === 0 && <p>No devices found</p>}
 
-      <div className="deviceGrid">
-        {userData?.user?.devices.map((device) => {
-          const deviceData = mqttDataList[device.clientId];
-          const powerState = deviceData?.status?.power ?? 'off';
-          const temp = deviceData?.sensor?.data?.Temperature ?? 0;
-          const status = getTempStatus(temp);
+        <div className="deviceGrid">
+          {userData?.user?.devices.map((device) => {
+            const deviceData = mqttDataList[device.clientId];
+            const powerState = deviceData?.status?.power ?? 'off';
+            const temp = deviceData?.sensor?.data?.Temperature ?? 0;
+            const status = getTempStatus(temp);
 
-          return (
-            <Card
-              key={device._id}
-              Icon={() => <span />}
-              title={device.clientId}
-              isChecked={powerState === 'on'}
-              onToggle={() => toggleDevice(device.clientId, powerState)}
-              status={status}
-              onAutomationClick={async () => {
-                const rule = await fetchAutomationRule(device.clientId);
-                if (rule) {
-                  setStartTime(rule.onTime || '');
-                  setEndTime(rule.offTime || '');
-                } else {
-                  setStartTime('');
-                  setEndTime('');
-                }
-                setAutomationDevice(device);
-              }}
-            >
-              {deviceData ? (
-                <div className="sensorData">
-                  {deviceData.sensor?.data && (
-                    <div>
-                      {Object.entries(deviceData.sensor.data)
-                        .filter(
-                          ([key, value]) =>
-                            !['_id', '__v', 'Id'].includes(key) &&
-                            !(typeof value === 'string' && value.startsWith('Power status from stat/POWER'))
-                        )
-                        .map(([key, value]) => {
-                          const labelIcons = {
-                            Temperature: '🌡️',
-                            Humidity: '💧',
-                            DewPoint: '❄️',
-                          };
-                          return (
-                            <p key={`${device.clientId}-${key}`}>
-                              <strong>{labelIcons[key] || key}:</strong> {value}
-                            </p>
-                          );
-                        })}
-                    </div>
-                  )}
-                  {deviceData.status?.message && deviceData.status.message.startsWith('LWT:') && (
-                    <p className="lwtStatus">
-                      🔗 {deviceData.status.message.slice(4).trim()}
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <p>Loading data for {device.clientId}...</p>
-              )}
-            </Card>
-          );
-        })}
-      </div>
-
-      {automationDevice && (
-        <div
-          className="automationOverlay"
-          onClick={() => setAutomationDevice(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="automation-title"
-        >
-          <div className="automationModal" onClick={(e) => e.stopPropagation()}>
-            <h2 id="automation-title">Set Automation for {automationDevice.clientId}</h2>
-            <form onSubmit={handleAutomationSubmit}>
-              <label htmlFor="start-time">Start Time:</label>
-              <input
-                id="start-time"
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                required
-              />
-              <br />
-              <label htmlFor="end-time">End Time:</label>
-              <input
-                id="end-time"
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                required
-              />
-              <br />
-              <br />
-              <button type="submit">Set Automation</button>
-              <button type="button" onClick={() => setAutomationDevice(null)}>
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="viewTimersBtn"
-                onClick={() => {
-                  setAutomationDevice(null);
-                  navigate(`/Automation/${automationDevice.clientId}`);
+            return (
+              <Card
+                key={device._id}
+                Icon={() => <span />}
+                title={device.clientId}
+                isChecked={powerState === 'on'}
+                onToggle={() => toggleDevice(device.clientId, powerState)}
+                status={status}
+                onAutomationClick={async () => {
+                  const rule = await fetchAutomationRule(device.clientId);
+                  if (rule) {
+                    setStartTime(rule.onTime || '');
+                    setEndTime(rule.offTime || '');
+                  } else {
+                    setStartTime('');
+                    setEndTime('');
+                  }
+                  setAutomationDevice(device);
                 }}
               >
-                View All Timers
-              </button>
-            </form>
-          </div>
+                {deviceData ? (
+                  <div className="sensorData">
+                    {deviceData.sensor?.data && (
+                      <div>
+                        {Object.entries(deviceData.sensor.data)
+                          .filter(
+                            ([key, value]) =>
+                              !['_id', '__v', 'Id'].includes(key) &&
+                              !(typeof value === 'string' && value.startsWith('Power status from stat/POWER'))
+                          )
+                          .map(([key, value]) => {
+                            const labelIcons = {
+                              Temperature: '🌡️',
+                              Humidity: '💧',
+                              DewPoint: '❄️',
+                            };
+                            return (
+                              <p key={`${device.clientId}-${key}`}>
+                                <strong>{labelIcons[key] || key}:</strong> {value}
+                              </p>
+                            );
+                          })}
+                      </div>
+                    )}
+                    {deviceData.status?.message && deviceData.status.message.startsWith('LWT:') && (
+                      <p className="lwtStatus">
+                        🔗 {deviceData.status.message.slice(4).trim()}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p>Loading data for {device.clientId}...</p>
+                )}
+              </Card>
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 };
-
 export default Home;

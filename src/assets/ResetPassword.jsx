@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import '../components/loginform.css';
+import '../CSS/loginform.css';
 
 const API_BASE_URL = 'http://localhost:3001';
 const ResetPassword = () => {

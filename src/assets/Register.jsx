@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../components/loginform.css';
+import '../CSS/loginform.css';
 
 const API_BASE_URL = 'http://localhost:3001';
 

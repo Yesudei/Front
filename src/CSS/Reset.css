@@ -1,0 +1,17 @@
+/* Reset and base */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;       /* added */
+  overflow: hidden;  /* added */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #fff;
+  color: #9e9e9e;
+  overflow-x: hidden;
+  font-family: 'Montserrat', sans-serif;
+}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Switch } from 'antd';
+import '../CSS/Card.css';
 
 function Card({
   Icon,

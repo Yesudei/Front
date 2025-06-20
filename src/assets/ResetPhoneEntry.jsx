@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../components/loginform.css';
+import '../CSS/loginform.css';
 
 const ResetPhoneEntry = () => {
   const [phoneNumber, setPhoneNumber] = useState('');

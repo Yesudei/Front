@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import '../components/loginform.css';
+import '../CSS/loginform.css';
 
 const OTP_LENGTH = 6;
 
