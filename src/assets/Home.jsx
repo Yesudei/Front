@@ -318,14 +318,6 @@ const Home = () => {
                         })}
                     </div>
                   )}
-                  {deviceData.automationRule && (
-                    <p className="automationInfo">
-                      ⚙️ <strong>Automation:</strong>{' '}
-                      <span style={{ color: deviceData.automationRule ? 'limegreen' : 'red' }}>
-                        {deviceData.automationRule ? 'ON' : 'OFF'}
-                      </span>
-                    </p>
-                  )}
                   {deviceData.status?.message && deviceData.status.message.startsWith('LWT:') && (
                     <p className="lwtStatus">
                       🔗 {deviceData.status.message.slice(4).trim()}
