@@ -117,8 +117,9 @@ const Home = () => {
         axiosGetWithAuth(`${API_BASE_URL}/mqt/data?clientId=${encodeURIComponent(clientId)}`, token),
         axiosGetWithAuth(`${API_BASE_URL}/mqt/getRule/${clientId}`, token),
       ]);
-
+      console.log(mqttRes)
       return {
+       
         ...mqttRes.data,
         automationRule: ruleRes,
       };

@@ -4,6 +4,7 @@ import { useUser } from '../UserContext';
 import './loginform.css';
 
 const API_BASE_URL = 'http://localhost:3001';
+
 const LoginForm = () => {
   const navigate = useNavigate();
   const { login, accessToken, username } = useUser();
@@ -25,6 +26,8 @@ const LoginForm = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
+
     if (!email || !password) {
       setError('Please enter both email and password');
       return;
@@ -40,15 +43,33 @@ const LoginForm = () => {
         body: JSON.stringify({ email, password }),
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', [...response.headers.entries()]); 
+
       const data = await response.json();
+
+      console.log('Response body data:', data);
+
       if (!response.ok) throw new Error(data.message || 'Login failed');
 
-      const token = data.accessToken;
-      const refresh = data.refreshToken;
+      const accessToken = data.accessToken;
+      const refreshToken = response.headers.get('x-refresh-token');
 
+
+      console.log('Extracted accessToken:', accessToken);
+      console.log('Extracted refreshToken:', refreshToken);
+
+      if (!accessToken || !refreshToken) {
+        throw new Error('Tokens not returned from server');
+      }
+
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+
+      // Fetch user info
       const userRes = await fetch(`${API_BASE_URL}/users/getuser`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         credentials: 'include',
       });
@@ -56,13 +77,13 @@ const LoginForm = () => {
       const userData = await userRes.json();
       if (!userRes.ok) throw new Error(userData.message || 'Failed to get user data');
 
-      // Save tokens to localStorage here (to match UserContext)
-      localStorage.setItem('accessToken', token);
-      localStorage.setItem('refreshToken', refresh);
+      const username = userData.user.name || 'User';
 
-      login(token, refresh, userData.user.name);
+      // Update context
+      login(accessToken, refreshToken, username);
       navigate('/');
     } catch (err) {
+      console.error('Login error:', err);
       setError(err.message);
     }
   };
