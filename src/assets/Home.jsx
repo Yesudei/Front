@@ -10,6 +10,7 @@ const API_BASE_URL = 'http://localhost:3001';
 const Home = () => {
   const { accessToken, refreshToken, setAccessToken, logout } = useUser();
   const [userData, setUserData] = useState(null);
+  const [loadingSession, setLoadingSession] = useState(true);
   const [mqttDataList, setMqttDataList] = useState({});
   const [automationDevice, setAutomationDevice] = useState(null);
   const [startTime, setStartTime] = useState('');
@@ -117,9 +118,7 @@ const Home = () => {
         axiosGetWithAuth(`${API_BASE_URL}/mqt/data?clientId=${encodeURIComponent(clientId)}`, token),
         axiosGetWithAuth(`${API_BASE_URL}/mqt/getRule/${clientId}`, token),
       ]);
-      console.log(mqttRes)
       return {
-       
         ...mqttRes.data,
         automationRule: ruleRes,
       };
@@ -227,11 +226,13 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    if (accessToken) {
-      fetchUserData(accessToken);
-    } else {
-      setUserData(null);
-    }
+    const loadSessionAndUser = async () => {
+      if (accessToken) {
+        await fetchUserData(accessToken);
+      }
+      setLoadingSession(false);
+    };
+    loadSessionAndUser();
   }, [accessToken, fetchUserData]);
 
   useEffect(() => {
@@ -254,6 +255,10 @@ const Home = () => {
     if (temp >= 16) return 'Normal';
     return 'Cold';
   };
+
+  if (loadingSession) {
+    return <div>Loading user session...</div>;
+  }
 
   return (
     <div className="container">
@@ -294,7 +299,7 @@ const Home = () => {
                   {deviceData.sensor?.data && (
                     <div>
                       {Object.entries(deviceData.sensor.data)
-                      .filter(
+                        .filter(
                           ([key, value]) =>
                             !['_id', '__v', 'Id'].includes(key) &&
                             !(typeof value === 'string' && value.startsWith('Power status from stat/POWER'))
@@ -321,14 +326,11 @@ const Home = () => {
                       </span>
                     </p>
                   )}
-                      {deviceData.status?.message && deviceData.status.message.startsWith('LWT:') && (
-                        <p className="lwtStatus">
-                          🔗 {deviceData.status.message.slice(4).trim()}
-                        </p>
-                      )}
-
-
-
+                  {deviceData.status?.message && deviceData.status.message.startsWith('LWT:') && (
+                    <p className="lwtStatus">
+                      🔗 {deviceData.status.message.slice(4).trim()}
+                    </p>
+                  )}
                 </div>
               ) : (
                 <p>Loading data for {device.clientId}...</p>

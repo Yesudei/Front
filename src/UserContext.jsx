@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import axios from 'axios';
 
 const UserContext = createContext();
@@ -7,7 +7,7 @@ export const UserProvider = ({ children }) => {
   const [accessToken, setAccessTokenState] = useState(() => {
     const token = localStorage.getItem('accessToken');
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`; // ✅ persist after refresh
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     }
     return token || null;
   });
@@ -15,16 +15,15 @@ export const UserProvider = ({ children }) => {
   const [refreshToken, setRefreshTokenState] = useState(() => localStorage.getItem('refreshToken') || null);
   const [username, setUsernameState] = useState(() => sessionStorage.getItem('username') || null);
   const [userData, setUserData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   const setAccessToken = useCallback((token) => {
     setAccessTokenState(token);
     if (token) {
       localStorage.setItem('accessToken', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`; // ✅ set for future requests
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     } else {
       localStorage.removeItem('accessToken');
-      delete axios.defaults.headers.common['Authorization']; // ✅ clean up
+      delete axios.defaults.headers.common['Authorization'];
     }
   }, []);
 
@@ -75,7 +74,7 @@ export const UserProvider = ({ children }) => {
       const newAccessToken = response.data.accessToken;
       if (!newAccessToken) throw new Error('No access token in response');
 
-      setAccessToken(newAccessToken); // will also update axios.defaults
+      setAccessToken(newAccessToken);
       return newAccessToken;
     } catch (error) {
       console.error('Token refresh failed:', error);
@@ -84,38 +83,6 @@ export const UserProvider = ({ children }) => {
     }
   }, [refreshToken, logout, setAccessToken]);
 
-  useEffect(() => {
-    const initializeSession = async () => {
-      console.log('🔄 Initializing session...');
-      if (!refreshToken) {
-        console.log('⚠️ No refresh token, skipping session init');
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const newAccessToken = await refreshAccessToken();
-        if (!newAccessToken) throw new Error('Refresh failed');
-
-        const userResponse = await axios.get('http://localhost:3001/users/getuser', {
-          withCredentials: true,
-        });
-
-        console.log('✅ User data fetched:', userResponse.data);
-        setUserData(userResponse.data.user);
-        setUsername(userResponse.data.user.name);
-      } catch (error) {
-        console.error('❌ Session initialization failed:', error);
-        logout();
-      } finally {
-        setIsLoading(false);
-        console.log('✅ Session initialization complete');
-      }
-    };
-
-    initializeSession();
-  }, [refreshToken, refreshAccessToken, logout, setUsername]);
-
   return (
     <UserContext.Provider
       value={{
@@ -123,12 +90,12 @@ export const UserProvider = ({ children }) => {
         refreshToken,
         username,
         userData,
-        isLoading,
         login,
         logout,
         refreshAccessToken,
         setAccessToken,
         setUsername,
+        setUserData,
       }}
     >
       {children}

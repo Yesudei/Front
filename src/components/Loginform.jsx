@@ -66,7 +66,6 @@ const LoginForm = () => {
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
 
-      // Fetch user info
       const userRes = await fetch(`${API_BASE_URL}/users/getuser`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -79,7 +78,6 @@ const LoginForm = () => {
 
       const username = userData.user.name || 'User';
 
-      // Update context
       login(accessToken, refreshToken, username);
       navigate('/');
     } catch (err) {
