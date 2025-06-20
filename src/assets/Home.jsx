@@ -99,7 +99,7 @@ const Home = () => {
   const fetchAutomationRule = useCallback(async (clientId) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/mqt/getRule/${clientId}`,
+        `${API_BASE_URL}/mqtt/getRule/${clientId}`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
           withCredentials: true,
@@ -115,8 +115,8 @@ const Home = () => {
   const fetchMqttDataForClient = useCallback(async (clientId, token) => {
     try {
       const [mqttRes, ruleRes] = await Promise.all([
-        axiosGetWithAuth(`${API_BASE_URL}/mqt/data?clientId=${encodeURIComponent(clientId)}`, token),
-        axiosGetWithAuth(`${API_BASE_URL}/mqt/getRule/${clientId}`, token),
+        axiosGetWithAuth(`${API_BASE_URL}/mqtt/data?clientId=${encodeURIComponent(clientId)}`, token),
+        axiosGetWithAuth(`${API_BASE_URL}/mqtt/getRule/${clientId}`, token),
       ]);
       return {
         ...mqttRes.data,
@@ -205,7 +205,7 @@ const Home = () => {
       };
 
       await axios.post(
-        `${API_BASE_URL}/mqt/automation/${automationDevice.clientId}`,
+        `${API_BASE_URL}/mqtt/automation/${automationDevice.clientId}`,
         payload,
         { withCredentials: true }
       );
