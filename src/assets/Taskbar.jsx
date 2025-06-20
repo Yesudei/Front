@@ -2,32 +2,67 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../CSS/Taskbar.css';
 import { useUser } from '../UserContext';
-import * as jwtDecode from 'jwt-decode';
-
-
 const Taskbar = () => {
   const { accessToken } = useUser();
 
   const [username, setUsername] = useState('User');
-
   const [weather, setWeather] = useState({ temp: null, condition: '', date: '' });
-  const [logs, setLogs] = useState([
-    { date: '2025-05-12', time: '16:25', text: '"УС буцалгагч" төхөөрөмж холболтоос саллаа.', location: 'office' },
-    { date: '2025-04-18', time: '15:07', text: '"RGB" төхөөрөмж холболтоос саллаа.', location: 'baishin 2' },
-    { date: '2025-04-17', time: '15:19', text: 'good morning', location: 'good morning' },
-  ]);
+  const [logs, setLogs] = useState([]); // ✅ always an array
 
   useEffect(() => {
     if (accessToken) {
+      // ✅ decode name if you want
       try {
-        const decoded = jwtDecode(accessToken);
-        // Adjust property names here to match your token's payload
+        const decoded = jwt_decode(accessToken);
         setUsername(decoded.name || decoded.username || 'User');
       } catch (error) {
         console.error('Invalid token:', error);
       }
+
+      // ✅ fetch user and logs
+      fetchUserAndLogs();
     }
   }, [accessToken]);
+
+  const fetchUserAndLogs = async () => {
+    console.log('Access Token:', accessToken);
+
+    try {
+      // ✅ Get user from backend with token in header
+      const userRes = await axios.get(`http://localhost:3001/users/getuser`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      console.log('getuser response:', userRes.data);
+
+      const userId = userRes.data.user?.id;
+      if (!userId) {
+        console.error('No user ID in getuser response');
+        return;
+      }
+
+      // ✅ Get logs for userId
+      const logsRes = await axios.get(`http://localhost:3001/mqtt/powerlogs/${userId}`);
+      console.log('powerlogs response:', logsRes.data);
+
+      // ✅ Extract logs safely:
+      const raw = logsRes.data;
+      const logsArray = Array.isArray(raw)
+        ? raw
+        : Array.isArray(raw.logs)
+        ? raw.logs
+        : Array.isArray(raw.data)
+        ? raw.data
+        : [];
+
+      setLogs(logsArray);
+
+    } catch (error) {
+      console.error('Failed to fetch user or logs:', error.response ? error.response.data : error);
+    }
+  };
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -80,18 +115,24 @@ const Taskbar = () => {
       </div>
 
       <div className="log-section">
-        {logs.map((log, index) => (
-          <div key={index} className="log-entry">
-            <div className="log-date">{log.date}</div>
-            <div className="log-content">
-              <div className="log-text">❌ {log.text}</div>
-              <div className="log-meta">
-                <span>{log.location}</span>
-                <span>{log.time}</span>
+        {Array.isArray(logs) && logs.length > 0 ? (
+          logs.map((log, index) => (
+            <div key={index} className="log-entry">
+              <div className="log-date">
+                {log.date || log.timestamp?.split('T')[0] || '---'}
+              </div>
+              <div className="log-content">
+                <div className="log-text">❌ {log.text || log.message || 'No message'}</div>
+                <div className="log-meta">
+                  <span>{log.location || '-'}</span>
+                  <span>{log.time || log.timestamp?.split('T')[1]?.substring(0, 5) || '--:--'}</span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <div>Лог мэдээлэл алга.</div>
+        )}
       </div>
     </div>
   );
