@@ -171,7 +171,7 @@ const Home = () => {
 
       try {
         await axios.post(
-          `${API_BASE_URL}/mqt/toggle`,
+          `${API_BASE_URL}/mqtt/toggle`,
           { clientId, state: newState },
           {
             headers: { Authorization: `Bearer ${accessToken}` },
@@ -346,32 +346,8 @@ const Home = () => {
       </div>
 
       {automationDevice && (
-        <div
-          className="automation-popup-overlay"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0,0.4)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000,
-          }}
-        >
-          <div
-            className="automation-popup"
-            style={{
-              background: 'white',
-              padding: '20px 30px',
-              borderRadius: 8,
-              boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-              maxWidth: 400,
-              width: '90%',
-            }}
-          >
+        <div className="automationOverlay">
+          <div className="automationModal">
             <h2>Automation Settings for {automationDevice.clientId}</h2>
             <form onSubmit={handleAutomationSubmit}>
               <div style={{ marginBottom: '1rem' }}>
@@ -408,19 +384,20 @@ const Home = () => {
               >
                 Cancel
               </button>
-                 <div className="card-actions" style={{ marginTop: '1rem' }}>
-                  <button
-                    onClick={() => navigate(`/automation/${device.clientId}`)}
-                    className="viewRulesBtn"
-                    type="button"
-                  >
-                    View All Rules
-                  </button>
-                </div>
+              <div className="card-actions" style={{ marginTop: '1rem' }}>
+                <button
+                  onClick={() => navigate(`/automation/${automationDevice.clientId}`)}
+                  className="viewRulesBtn"
+                  type="button"
+                >
+                  View All Rules
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
+
     </div>
   );
 };

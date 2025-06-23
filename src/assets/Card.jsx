@@ -17,8 +17,10 @@ function Card({
     Cold: '❄️',
   };
 
+  const cardClassName = `card ${status ? status.toLowerCase() : ''}`;
+
   return (
-    <div className="card">
+    <div className={cardClassName}>
       <div className="card-top">
         <div className="card-header">
           {Icon && <Icon className="card-icon" />}

@@ -66,7 +66,7 @@
 
 .automationModal input[type="time"] {
   width: 100%;
-  padding: 8px 12px;
+  padding: 8px 4px;
   font-size: 16px;
   margin-bottom: 16px;
   border: 1px solid #ccc;
@@ -76,8 +76,8 @@
 
 /* Button layout */
 .automationModal button {
-  margin-right: 10px;
-  margin-top: 10px;
+  margin-right: 2px;
+  margin-top: 2px;
   padding: 8px 14px;
   font-size: 14px;
   cursor: pointer;
