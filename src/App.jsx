@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { UserProvider, useUser } from './UserContext';
+import { useUser, UserProvider } from './UserContext';
+import { setupInterceptors } from './axiosInstance';
+
 import Home from './assets/Home';
 import LoginForm from './components/Loginform';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -13,9 +15,14 @@ import Automation from './assets/Automation';
 import DarkModeToggle from './assets/DarkModeToggle'; 
 
 const AppRoutes = () => {
-  const { isLoading } = useUser();
+  const user = useUser();
 
-  if (isLoading) {
+  // ✅ Setup the interceptor once the UserProvider is ready
+  useEffect(() => {
+    setupInterceptors(user);
+  }, [user]);
+
+  if (user.isLoading) {
     return <div>Loading user session...</div>;
   }
 

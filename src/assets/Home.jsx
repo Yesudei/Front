@@ -1,14 +1,12 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import axiosInstance from '../axiosInstance'; // use your axiosInstance here
 import { useUser } from '../UserContext';
 import Card from './Card';
 import { useNavigate } from 'react-router-dom';
 import '../CSS/Home.css';
 
-const API_BASE_URL = 'http://localhost:3001';
-
 const Home = () => {
-  const { accessToken, refreshToken, setAccessToken, logout } = useUser();
+  const { logout } = useUser();
   const [userData, setUserData] = useState(null);
   const [loadingSession, setLoadingSession] = useState(true);
   const [mqttDataList, setMqttDataList] = useState({});
@@ -16,227 +14,119 @@ const Home = () => {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const isMounted = useRef(true);
-  const refreshingToken = useRef(false);
-  const refreshSubscribers = useRef([]);
   const navigate = useNavigate();
 
-  const onAccessTokenRefreshed = useCallback((newToken) => {
-    refreshSubscribers.current.forEach((callback) => callback(newToken));
-    refreshSubscribers.current = [];
-  }, []);
-
-  const addRefreshSubscriber = useCallback((callback) => {
-    refreshSubscribers.current.push(callback);
-  }, []);
-
-  const refreshAccessToken = useCallback(async () => {
-    if (refreshingToken.current) {
-      return new Promise((resolve) => {
-        addRefreshSubscriber(resolve);
-      });
-    }
-
-    refreshingToken.current = true;
+  // Fetch user data with axiosInstance (interceptor handles tokens)
+  const fetchUserData = useCallback(async () => {
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/users/refresh`,
-        {},
-        {
-          headers: { 'x-refresh-token': refreshToken },
-          withCredentials: true,
-        }
-      );
-      const newAccessToken = response.data.accessToken || response.headers['x-access-token'];
-      if (!newAccessToken) throw new Error('No access token returned');
-      setAccessToken(newAccessToken);
-      onAccessTokenRefreshed(newAccessToken);
-      return newAccessToken;
+      const data = await axiosInstance.get('/users/getuser');
+      if (isMounted.current) setUserData(data.data || data);
     } catch (error) {
-      console.error('Error refreshing token:', error);
+      console.error('Error fetching user data:', error);
       logout();
       navigate('/login');
-      return null;
-    } finally {
-      refreshingToken.current = false;
     }
-  }, [refreshToken, setAccessToken, logout, navigate, onAccessTokenRefreshed]);
+  }, [logout, navigate]);
 
-  const axiosGetWithAuth = useCallback(
-    async (url, token) => {
-      try {
-        const response = await axios.get(url, {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
-        });
-        return response.data;
-      } catch (error) {
-        if (error.response?.status === 401) {
-          const newToken = await refreshAccessToken();
-          if (newToken) {
-            try {
-              const retryResponse = await axios.get(url, {
-                headers: { Authorization: `Bearer ${newToken}` },
-                withCredentials: true,
-              });
-              return retryResponse.data;
-            } catch (err) {
-              console.error('Retry failed after token refresh:', err);
-              logout();
-              navigate('/login');
-            }
-          } else {
-            logout();
-            navigate('/login');
-          }
-        }
-        throw error;
+  // Fetch MQTT data & automation rule for one clientId
+  const fetchMqttDataForClient = useCallback(async (clientId) => {
+    try {
+      const [mqttRes, ruleRes] = await Promise.all([
+        axiosInstance.get(`/mqtt/data?clientId=${encodeURIComponent(clientId)}`),
+        axiosInstance.get(`/mqtt/getRule/${clientId}`),
+      ]);
+      return {
+        ...mqttRes.data,
+        automationRule: ruleRes.data,
+      };
+    } catch (error) {
+      console.error(`Error fetching data for clientId ${clientId}:`, error);
+      return null;
+    }
+  }, []);
+
+  // Fetch MQTT data for all devices
+  const fetchAllMqttData = useCallback(async (clientIds) => {
+    try {
+      const results = await Promise.all(clientIds.map((id) => fetchMqttDataForClient(id)));
+      if (!isMounted.current) return;
+      const dataMap = {};
+      clientIds.forEach((id, idx) => {
+        if (results[idx]) dataMap[id] = results[idx];
+      });
+      setMqttDataList(dataMap);
+    } catch (error) {
+      console.error('Error fetching all MQTT data:', error);
+    }
+  }, [fetchMqttDataForClient]);
+
+  // Toggle device power on/off
+  const toggleDevice = useCallback(async (clientId, currentState) => {
+    const newState = currentState === 'on' ? 'off' : 'on';
+
+    // Optimistic UI update
+    setMqttDataList((prev) => ({
+      ...prev,
+      [clientId]: {
+        ...prev[clientId],
+        status: {
+          ...prev[clientId]?.status,
+          power: newState,
+        },
+      },
+    }));
+
+    try {
+      await axiosInstance.post(
+        '/mqtt/toggle',
+        { clientId, state: newState }
+      );
+
+      const freshData = await fetchMqttDataForClient(clientId);
+      if (freshData && isMounted.current) {
+        setMqttDataList((prev) => ({
+          ...prev,
+          [clientId]: freshData,
+        }));
       }
-    },
-    [refreshAccessToken, logout, navigate]
-  );
-
-  const fetchUserData = useCallback(
-    async (token) => {
-      try {
-        const data = await axiosGetWithAuth(`${API_BASE_URL}/users/getuser`, token);
-        if (isMounted.current) setUserData(data);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        logout();
-        navigate('/login');
-      }
-    },
-    [axiosGetWithAuth, logout, navigate]
-  );
-
-  const fetchAutomationRule = useCallback(
-    async (clientId) => {
-      try {
-        const response = await axios.get(`${API_BASE_URL}/mqtt/getRule/${clientId}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          withCredentials: true,
-        });
-        return response.data;
-      } catch (error) {
-        console.error('Error fetching automation rule:', error);
-        return null;
-      }
-    },
-    [accessToken]
-  );
-
-  const fetchMqttDataForClient = useCallback(
-    async (clientId, token) => {
-      try {
-        const [mqttRes, ruleRes] = await Promise.all([
-          axiosGetWithAuth(`${API_BASE_URL}/mqtt/data?clientId=${encodeURIComponent(clientId)}`, token),
-          axiosGetWithAuth(`${API_BASE_URL}/mqtt/getRule/${clientId}`, token),
-        ]);
-        return {
-          ...mqttRes.data,
-          automationRule: ruleRes,
-        };
-      } catch (error) {
-        console.error(`Error fetching data for clientId ${clientId}:`, error);
-        return null;
-      }
-    },
-    [axiosGetWithAuth]
-  );
-
-  const fetchAllMqttData = useCallback(
-    async (clientIds, token) => {
-      try {
-        const results = await Promise.all(clientIds.map((id) => fetchMqttDataForClient(id, token)));
-        if (!isMounted.current) return;
-        const dataMap = {};
-        clientIds.forEach((id, idx) => {
-          if (results[idx]) dataMap[id] = results[idx];
-        });
-        setMqttDataList(dataMap);
-      } catch (error) {
-        console.error('Error fetching all MQTT data:', error);
-      }
-    },
-    [fetchMqttDataForClient]
-  );
-
-  const toggleDevice = useCallback(
-    async (clientId, currentState) => {
-      const newState = currentState === 'on' ? 'off' : 'on';
-
+    } catch (error) {
+      console.error('Error toggling device:', error);
+      // Revert UI on error
       setMqttDataList((prev) => ({
         ...prev,
         [clientId]: {
           ...prev[clientId],
           status: {
             ...prev[clientId]?.status,
-            power: newState,
+            power: currentState,
           },
         },
       }));
+    }
+  }, [fetchMqttDataForClient]);
 
-      try {
-        await axios.post(
-          `${API_BASE_URL}/mqtt/toggle`,
-          { clientId, state: newState },
-          {
-            headers: { Authorization: `Bearer ${accessToken}` },
-            withCredentials: true,
-          }
-        );
+  // Handle saving automation rules
+  const handleAutomationSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    if (!automationDevice) return alert('No device selected');
 
-        const freshData = await fetchMqttDataForClient(clientId, accessToken);
-        if (freshData && isMounted.current) {
-          setMqttDataList((prev) => ({
-            ...prev,
-            [clientId]: freshData,
-          }));
-        }
-      } catch (error) {
-        console.error('Error toggling device:', error);
-        setMqttDataList((prev) => ({
-          ...prev,
-          [clientId]: {
-            ...prev[clientId],
-            status: {
-              ...prev[clientId]?.status,
-              power: currentState,
-            },
-          },
-        }));
-      }
-    },
-    [accessToken, fetchMqttDataForClient]
-  );
+    try {
+      const payload = {
+        topic: `cmnd/${automationDevice.clientId}/POWER`,
+        onTime: startTime,
+        offTime: endTime,
+        timezone: 'Asia/Ulaanbaatar',
+      };
 
-  const handleAutomationSubmit = useCallback(
-    async (e) => {
-      e.preventDefault();
-      if (!automationDevice) return alert('No device selected');
+      await axiosInstance.post(`/mqtt/automation/${automationDevice.clientId}`, payload);
 
-      try {
-        const payload = {
-          topic: `cmnd/${automationDevice.clientId}/POWER`,
-          onTime: startTime,
-          offTime: endTime,
-          timezone: 'Asia/Ulaanbaatar',
-        };
-
-        await axios.post(`${API_BASE_URL}/mqtt/automation/${automationDevice.clientId}`, payload, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          withCredentials: true,
-        });
-
-        alert('Automation settings saved successfully!');
-        setAutomationDevice(null);
-      } catch (error) {
-        console.error('Error setting automation:', error);
-        alert('Failed to save automation settings.');
-      }
-    },
-    [automationDevice, startTime, endTime, accessToken]
-  );
+      alert('Automation settings saved successfully!');
+      setAutomationDevice(null);
+    } catch (error) {
+      console.error('Error setting automation:', error);
+      alert('Failed to save automation settings.');
+    }
+  }, [automationDevice, startTime, endTime]);
 
   useEffect(() => {
     isMounted.current = true;
@@ -247,29 +137,26 @@ const Home = () => {
 
   useEffect(() => {
     const loadSessionAndUser = async () => {
-      if (!accessToken) {
-        logout();
-        navigate('/login');
-        return;
-      }
-      await fetchUserData(accessToken);
+      await fetchUserData();
       setLoadingSession(false);
     };
     loadSessionAndUser();
-  }, [accessToken, fetchUserData, logout, navigate]);
+  }, [fetchUserData]);
 
   useEffect(() => {
-    if (userData?.user?.devices?.length > 0 && accessToken) {
+    if (userData?.user?.devices?.length > 0) {
       const clientIds = userData.user.devices.map((d) => d.clientId);
-      fetchAllMqttData(clientIds, accessToken);
+      fetchAllMqttData(clientIds);
+
       const intervalId = setInterval(() => {
-        fetchAllMqttData(clientIds, accessToken);
+        fetchAllMqttData(clientIds);
       }, 10000);
+
       return () => clearInterval(intervalId);
     } else {
       setMqttDataList({});
     }
-  }, [userData, accessToken, fetchAllMqttData]);
+  }, [userData, fetchAllMqttData]);
 
   const getTempStatus = (temp) => {
     if (temp > 26) return 'Hot';
@@ -303,7 +190,7 @@ const Home = () => {
                 onToggle={() => toggleDevice(device.clientId, powerState)}
                 status={status}
                 onAutomationClick={async () => {
-                  const rule = await fetchAutomationRule(device.clientId);
+                  const rule = await axiosInstance.get(`/mqtt/getRule/${device.clientId}`).then(res => res.data).catch(() => null);
                   if (rule) {
                     setStartTime(rule.onTime || '');
                     setEndTime(rule.offTime || '');

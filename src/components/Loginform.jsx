@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../UserContext';
+import axiosInstance from '../axiosInstance';
 import '../CSS/loginform.css';
-
-const API_BASE_URL = 'http://localhost:3001';
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -24,57 +23,44 @@ const LoginForm = () => {
     return () => document.body.classList.remove('login-background');
   }, []);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError('');
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setError('');
 
-    if (!email || !password) {
-      setError('Please enter both email and password');
-      return;
+  if (!email || !password) {
+    setError('Please enter both email and password');
+    return;
+  }
+
+  try {
+    // 1️⃣ Login call
+    const response = await axiosInstance.post('/users/login', { email, password });
+
+    const accessToken = response.data.accessToken;
+    const refreshToken = response.headers['x-refresh-token'];
+
+    if (!accessToken || !refreshToken) {
+      throw new Error('Tokens not returned from server');
     }
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/users/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      });
+    // 2️⃣ Get user info
+    const userRes = await axiosInstance.get('/users/getuser', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Login failed');
+    const username = userRes.data.user?.name || 'User';
 
-      const accessToken = data.accessToken;
-      const refreshToken = response.headers.get('x-refresh-token');
+    // 3️⃣ Save tokens + username in context
+    login(accessToken, refreshToken, username);
 
-      if (!accessToken || !refreshToken) {
-        throw new Error('Tokens not returned from server');
-      }
+    // 4️⃣ Redirect to home
+    navigate('/');
+  } catch (err) {
+    console.error('Login error:', err);
+    setError(err.response?.data?.message || err.message || 'Login failed');
+  }
+};
 
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
-
-      const userRes = await fetch(`${API_BASE_URL}/users/getuser`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        credentials: 'include',
-      });
-
-      const userData = await userRes.json();
-      if (!userRes.ok) throw new Error(userData.message || 'Failed to get user data');
-
-      const username = userData.user.name || 'User';
-
-      login(accessToken, refreshToken, username);
-      navigate('/');
-    } catch (err) {
-      console.error('Login error:', err);
-      setError(err.message);
-    }
-  };
 
   return (
     <div className="login-page">

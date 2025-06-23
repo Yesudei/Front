@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import axios from 'axios';
+import axiosInstance from './axiosInstance';  // <-- import your custom instance
 
 const UserContext = createContext();
 
@@ -7,7 +7,7 @@ export const UserProvider = ({ children }) => {
   const [accessToken, setAccessTokenState] = useState(() => {
     const token = localStorage.getItem('accessToken');
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     }
     return token || null;
   });
@@ -20,10 +20,10 @@ export const UserProvider = ({ children }) => {
     setAccessTokenState(token);
     if (token) {
       localStorage.setItem('accessToken', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;  // <-- use axiosInstance
     } else {
       localStorage.removeItem('accessToken');
-      delete axios.defaults.headers.common['Authorization'];
+      delete axiosInstance.defaults.headers.common['Authorization'];  // <-- use axiosInstance
     }
   }, []);
 
@@ -62,8 +62,8 @@ export const UserProvider = ({ children }) => {
     }
 
     try {
-      const response = await axios.post(
-        'http://localhost:3001/users/refresh',
+      const response = await axiosInstance.post(  // <-- use axiosInstance here as well
+        '/users/refresh',
         {},
         {
           headers: { 'x-refresh-token': refreshToken },

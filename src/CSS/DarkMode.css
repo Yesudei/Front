@@ -1,4 +1,3 @@
-/* ✅ GLOBAL DARK MODE BASE */
 body.dark,
 body.dark html,
 body.dark #root,
@@ -10,20 +9,16 @@ body.dark .content-wrapper {
   background-color: #121212 !important;
   color: #f0f0f0;
 }
-/* ✅ GRID CONTAINER MUST INHERIT DARK MODE */
 body.dark .grid-container {
   background-color: #121212;
   color: #f0f0f0;
   min-height: 100vh;
 }
-
-/* ✅ MAIN CONTAINER INSIDE GRID */
 body.dark .main-container {
   background-color: transparent; /* transparent so grid covers it */
   color: inherit;
 }
 
-/* ✅ TASKBAR CONTAINER if needed */
 body.dark .taskbar-container {
   background-color: #1e1e2f;
   color: #eee;
@@ -36,7 +31,6 @@ body.dark {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* ✅ ENSURE MAIN CONTAINERS COVER THE WHOLE BG IN DARK MODE */
 body.dark .home-layout,
 body.dark .automation-container,
 body.dark .page-content,
