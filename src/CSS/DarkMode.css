@@ -80,6 +80,26 @@ body.dark .header {
   background-color: #1e1e2f;
   color: #f0f0f0;
 }
+body.dark .header-right{
+    background-color: #1e1e2f;
+  color: #f0f0f0;
+}
+body.dark .user.menu {
+  background-color: #1e1e2f;
+  color: #f0f0f0;
+}
+body.dark .user-dropdown {
+  background-color: #1e1e2f;
+  color: #f0f0f0;
+}
+body.dark .user-dropdown li{
+  background-color: #1e1e2f;
+  color: #f0f0f0;
+}
+.user-dropdown li:last-child{
+    background-color: #1e1e2f;
+  color: #f0f0f0;
+}
 
 /* ✅ TASKBAR */
 body.dark .taskbar {
