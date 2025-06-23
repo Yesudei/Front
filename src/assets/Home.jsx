@@ -4,7 +4,6 @@ import { useUser } from '../UserContext';
 import Card from './Card';
 import { useNavigate } from 'react-router-dom';
 import '../CSS/Home.css';
-import Taskbar from './Taskbar';
 
 const API_BASE_URL = 'http://localhost:3001';
 
@@ -47,21 +46,20 @@ const Home = () => {
           withCredentials: true,
         }
       );
-
       const newAccessToken = response.data.accessToken || response.headers['x-access-token'];
       if (!newAccessToken) throw new Error('No access token returned');
-
       setAccessToken(newAccessToken);
       onAccessTokenRefreshed(newAccessToken);
       return newAccessToken;
     } catch (error) {
       console.error('Error refreshing token:', error);
       logout();
+      navigate('/login');
       return null;
     } finally {
       refreshingToken.current = false;
     }
-  }, [refreshToken, setAccessToken, logout, addRefreshSubscriber, onAccessTokenRefreshed]);
+  }, [refreshToken, setAccessToken, logout, navigate, onAccessTokenRefreshed]);
 
   const axiosGetWithAuth = useCallback(
     async (url, token) => {
@@ -75,17 +73,26 @@ const Home = () => {
         if (error.response?.status === 401) {
           const newToken = await refreshAccessToken();
           if (newToken) {
-            const retryResponse = await axios.get(url, {
-              headers: { Authorization: `Bearer ${newToken}` },
-              withCredentials: true,
-            });
-            return retryResponse.data;
+            try {
+              const retryResponse = await axios.get(url, {
+                headers: { Authorization: `Bearer ${newToken}` },
+                withCredentials: true,
+              });
+              return retryResponse.data;
+            } catch (err) {
+              console.error('Retry failed after token refresh:', err);
+              logout();
+              navigate('/login');
+            }
+          } else {
+            logout();
+            navigate('/login');
           }
         }
         throw error;
       }
     },
-    [refreshAccessToken]
+    [refreshAccessToken, logout, navigate]
   );
 
   const fetchUserData = useCallback(
@@ -95,9 +102,11 @@ const Home = () => {
         if (isMounted.current) setUserData(data);
       } catch (error) {
         console.error('Error fetching user data:', error);
+        logout();
+        navigate('/login');
       }
     },
-    [axiosGetWithAuth]
+    [axiosGetWithAuth, logout, navigate]
   );
 
   const fetchAutomationRule = useCallback(
@@ -139,9 +148,7 @@ const Home = () => {
     async (clientIds, token) => {
       try {
         const results = await Promise.all(clientIds.map((id) => fetchMqttDataForClient(id, token)));
-
         if (!isMounted.current) return;
-
         const dataMap = {};
         clientIds.forEach((id, idx) => {
           if (results[idx]) dataMap[id] = results[idx];
@@ -217,6 +224,7 @@ const Home = () => {
         };
 
         await axios.post(`${API_BASE_URL}/mqtt/automation/${automationDevice.clientId}`, payload, {
+          headers: { Authorization: `Bearer ${accessToken}` },
           withCredentials: true,
         });
 
@@ -227,7 +235,7 @@ const Home = () => {
         alert('Failed to save automation settings.');
       }
     },
-    [automationDevice, startTime, endTime]
+    [automationDevice, startTime, endTime, accessToken]
   );
 
   useEffect(() => {
@@ -239,23 +247,24 @@ const Home = () => {
 
   useEffect(() => {
     const loadSessionAndUser = async () => {
-      if (accessToken) {
-        await fetchUserData(accessToken);
+      if (!accessToken) {
+        logout();
+        navigate('/login');
+        return;
       }
+      await fetchUserData(accessToken);
       setLoadingSession(false);
     };
     loadSessionAndUser();
-  }, [accessToken, fetchUserData]);
+  }, [accessToken, fetchUserData, logout, navigate]);
 
   useEffect(() => {
     if (userData?.user?.devices?.length > 0 && accessToken) {
       const clientIds = userData.user.devices.map((d) => d.clientId);
       fetchAllMqttData(clientIds, accessToken);
-
       const intervalId = setInterval(() => {
         fetchAllMqttData(clientIds, accessToken);
       }, 10000);
-
       return () => clearInterval(intervalId);
     } else {
       setMqttDataList({});
@@ -276,10 +285,8 @@ const Home = () => {
     <div className="home-layout">
       <div className="main-content">
         <h1>User Devices & Latest MQTT Data</h1>
-
         {!userData && <p>Loading user data...</p>}
         {userData && userData.user.devices.length === 0 && <p>No devices found</p>}
-
         <div className="deviceGrid">
           {userData?.user?.devices.map((device) => {
             const deviceData = mqttDataList[device.clientId];
@@ -331,14 +338,13 @@ const Home = () => {
                           })}
                       </div>
                     )}
-                    {deviceData.status?.message && deviceData.status.message.startsWith('LWT:') && (
+                    {deviceData.status?.message?.startsWith('LWT:') && (
                       <p className="lwtStatus">🔗 {deviceData.status.message.slice(4).trim()}</p>
                     )}
                   </div>
                 ) : (
                   <p>Loading data for {device.clientId}...</p>
                 )}
-
               </Card>
             );
           })}
@@ -351,9 +357,7 @@ const Home = () => {
             <h2>Automation Settings for {automationDevice.clientId}</h2>
             <form onSubmit={handleAutomationSubmit}>
               <div style={{ marginBottom: '1rem' }}>
-                <label htmlFor="startTime" style={{ marginRight: 8 }}>
-                  Start Time:
-                </label>
+                <label htmlFor="startTime" style={{ marginRight: 8 }}>Start Time:</label>
                 <input
                   id="startTime"
                   type="time"
@@ -363,9 +367,7 @@ const Home = () => {
                 />
               </div>
               <div style={{ marginBottom: '1rem' }}>
-                <label htmlFor="endTime" style={{ marginRight: 8 }}>
-                  End Time:
-                </label>
+                <label htmlFor="endTime" style={{ marginRight: 8 }}>End Time:</label>
                 <input
                   id="endTime"
                   type="time"
@@ -374,30 +376,14 @@ const Home = () => {
                   required
                 />
               </div>
-              <button type="submit" style={{ padding: '0.5rem 1rem', fontWeight: 'bold' }}>
-                Save Automation
-              </button>
-              <button
-                type="button"
-                onClick={() => setAutomationDevice(null)}
-                style={{ marginLeft: 10, padding: '0.5rem 1rem', fontWeight: 'bold' }}
-              >
+              <button type="submit">Save Automation</button>
+              <button type="button" onClick={() => setAutomationDevice(null)} style={{ marginLeft: 10 }}>
                 Cancel
               </button>
-              <div className="card-actions" style={{ marginTop: '1rem' }}>
-                <button
-                  onClick={() => navigate(`/automation/${automationDevice.clientId}`)}
-                  className="viewRulesBtn"
-                  type="button"
-                >
-                  View All Rules
-                </button>
-              </div>
             </form>
           </div>
         </div>
       )}
-
     </div>
   );
 };
