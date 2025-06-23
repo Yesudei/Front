@@ -43,11 +43,10 @@ const Taskbar = () => {
         return;
       }
 
-      // ✅ Get logs for userId
       const logsRes = await axios.get(`http://localhost:3001/mqtt/powerlogs/${userId}`);
       console.log('powerlogs response:', logsRes.data);
+      console.log("logs ",logsRes)
 
-      // ✅ Extract logs safely:
       const raw = logsRes.data;
       const logsArray = Array.isArray(raw)
         ? raw
@@ -115,25 +114,38 @@ const Taskbar = () => {
       </div>
 
       <div className="log-section">
-        {Array.isArray(logs) && logs.length > 0 ? (
-          logs.map((log, index) => (
-            <div key={index} className="log-entry">
-              <div className="log-date">
-                {log.date || log.timestamp?.split('T')[0] || '---'}
+<div className="log-section">
+  {Array.isArray(logs) && logs.length > 0 ? (
+    logs
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // most recent first
+      .slice(0, 10)
+      .map((log, index) => {
+        const [date, time] = log.timestamp
+          ? log.timestamp.split('T')
+          : ['---', '--:--'];
+
+        return (
+          <div key={index} className="log-entry">
+            <div className="log-date">{date.replace(/-/g, '.')}</div>
+            <div className="log-content">
+              <div className="log-text">
+                ⚡ {log.power === 'on' ? 'Тэжээл асаалттай' : 'Тэжээл унтарсан'}
               </div>
-              <div className="log-content">
-                <div className="log-text">❌ {log.text || log.message || 'No message'}</div>
-                <div className="log-meta">
-                  <span>{log.location || '-'}</span>
-                  <span>{log.time || log.timestamp?.split('T')[1]?.substring(0, 5) || '--:--'}</span>
-                </div>
+              <div className="log-meta">
+                <span>{log.clientId || '-'}</span>
+                <span>{time?.substring(0, 5) || '--:--'}</span>
               </div>
             </div>
-          ))
-        ) : (
-          <div>Лог мэдээлэл алга.</div>
-        )}
-      </div>
+          </div>
+        );
+      })
+  ) : (
+    <div>Лог мэдээлэл алга.</div>
+  )}
+</div>
+
+</div>
+
     </div>
   );
 };
