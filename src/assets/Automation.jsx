@@ -80,7 +80,7 @@ const Automation = () => {
             setLoading(false);
             return;
           }
-          const res = await axios.get(`${API_BASE_URL}/mqt/getRule/${clientId}`, {
+          const res = await axios.get(`${API_BASE_URL}/mqtt/getRule/${clientId}`, {
             headers: { Authorization: `Bearer ${accessToken}` },
             withCredentials: true,
           });
@@ -88,7 +88,7 @@ const Automation = () => {
         } else {
           for (const device of localUserData.user.devices) {
             try {
-              const res = await axios.get(`${API_BASE_URL}/mqt/getRule/${device.clientId}`, {
+              const res = await axios.get(`${API_BASE_URL}/mqtt/getRule/${device.clientId}`, {
                 headers: { Authorization: `Bearer ${accessToken}` },
                 withCredentials: true,
               });
@@ -118,7 +118,7 @@ const Automation = () => {
     if (!window.confirm('Are you sure you want to delete this timer?')) return;
 
     try {
-      await axios.delete(`${API_BASE_URL}/mqt/delete/${ruleId}`, {
+      await axios.delete(`${API_BASE_URL}/mqtt/delete/${ruleId}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
         withCredentials: true,
       });
@@ -150,7 +150,7 @@ const Automation = () => {
 
     try {
       await axios.put(
-        `${API_BASE_URL}/mqt/update/${editingRule.ruleId}`,
+        `${API_BASE_URL}/mqtt/update/${editingRule.ruleId}`,
         {
           onTime: editForm.onTime,
           offTime: editForm.offTime,
@@ -209,7 +209,7 @@ const Automation = () => {
       };
 
       await axios.post(
-        `${API_BASE_URL}/mqt/automation/${addingForDevice}`,
+        `${API_BASE_URL}/mqtt/automation/${addingForDevice}`,
         payload,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -218,7 +218,7 @@ const Automation = () => {
       );
 
       // Fetch fresh rules after adding
-      const res = await axios.get(`${API_BASE_URL}/mqt/getRule/${addingForDevice}`, {
+      const res = await axios.get(`${API_BASE_URL}/mqtt/getRule/${addingForDevice}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
         withCredentials: true,
       });
