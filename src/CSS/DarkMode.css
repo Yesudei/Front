@@ -301,3 +301,38 @@ body.dark .log-meta {
   display: flex;
   gap: 10px;
 }
+body.dark .card {
+  /* Keep layout and general styles */
+  color: #eee;
+  background: #333; /* fallback neutral dark background */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  transition: transform 0.2s;
+}
+body.dark .card.hot {
+  background: linear-gradient(135deg, #a33b3b, #b86746);
+  color: #eee;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+}
+
+body.dark .card.normal {
+  background: linear-gradient(135deg, #3a8a8a, #2a4f7f);
+  color: #eee;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+}
+
+body.dark .card.cold {
+  background: linear-gradient(135deg, #2c9aa5, #3a5a9a);
+  color: #eee;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+}
+
+body.dark .automation-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ddd;
+  transition: background 0.3s, transform 0.2s;
+}
+
+body.dark .automation-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
