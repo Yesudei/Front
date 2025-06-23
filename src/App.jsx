@@ -4,12 +4,13 @@ import { UserProvider, useUser } from './UserContext';
 import Home from './assets/Home';
 import LoginForm from './components/Loginform';
 import ProtectedRoute from './components/ProtectedRoute';
-import Layout from './components/Layout';
+import Layout from './components/layout';
 import Register from './assets/Register';
 import VerifyNumber from './assets/Verifynumber';
 import ResetPassword from './assets/ResetPassword';
 import ResetPhoneEntry from './assets/ResetPhoneEntry';
 import Automation from './assets/Automation';
+import DarkModeToggle from './assets/DarkModeToggle'; 
 
 const AppRoutes = () => {
   const { isLoading } = useUser();
@@ -25,8 +26,8 @@ const AppRoutes = () => {
       <Route path="/verify-number" element={<VerifyNumber />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/reset-phone" element={<ResetPhoneEntry />} />
-  <Route path="/Automation" element={<Automation />} />
-  <Route path="/Automation/:clientId" element={<Automation />} />
+      <Route path="/Automation" element={<Automation />} />
+      <Route path="/Automation/:clientId" element={<Automation />} />
       <Route
         path="/"
         element={
@@ -45,6 +46,7 @@ const AppRoutes = () => {
 function App() {
   return (
     <UserProvider>
+      <DarkModeToggle />
       <AppRoutes />
     </UserProvider>
   );

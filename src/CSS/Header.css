@@ -3,10 +3,12 @@
   line-height: 1px;
   font-size: 20px;
 }
+
 .icon,
 .icon_header {
   margin-left: 10px;
 }
+
 .header {
   background-color: #ccc;
   grid-area: header;
@@ -19,20 +21,31 @@
   position: relative;
   z-index: 100;
 }
+
 .menu-icon {
   display: none;
 }
+
 .header-right {
   position: relative;
   display: flex;
   align-items: center;
+  gap: 1rem;
   z-index: 1000;
 }
+
+/* The wrapper around user button and dropdown — needed for absolute positioning */
+.user-menu {
+  position: relative;
+}
+
+/* Dropdown styled and positioned to the left of the user button */
 .user-dropdown {
   list-style: none;
   position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  top: 0;             /* Align top edges */
+  right: 100%;        /* Position to the left of user-menu */
+  margin-right: 8px;  /* Small gap between dropdown and button */
   background-color: #fff;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
@@ -42,6 +55,7 @@
   user-select: none;
   white-space: nowrap;
 }
+
 .user-dropdown li {
   padding: 12px 24px;
   cursor: pointer;
@@ -50,9 +64,11 @@
   transition: background-color 0.3s ease;
   border-bottom: 1px solid #eee;
 }
+
 .user-dropdown li:last-child {
   border-bottom: none;
 }
+
 .user-dropdown li:hover {
   background-color: #f0f0f0;
   color: #000;
