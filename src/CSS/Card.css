@@ -12,8 +12,6 @@
   padding: 15px;
   display: flex;
   flex-direction: column;
-  /* REMOVE this ↓ */
-  /* justify-content: space-between; */
   height: auto;
   position: relative;
   overflow: hidden;

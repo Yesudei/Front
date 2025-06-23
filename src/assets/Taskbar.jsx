@@ -29,12 +29,8 @@ const Taskbar = () => {
         },
       });
 
-   const raw = logsRes.data;
-   const logsArray = Array.isArray(raw?.logs)
-    ? raw.logs
-    : [];
-
-
+      const raw = logsRes.data;
+      const logsArray = Array.isArray(raw?.logs) ? raw.logs : [];
       setLogs(logsArray);
     } catch (error) {
       console.error('Failed to fetch user or logs:', error.response?.data || error);
@@ -59,7 +55,7 @@ const Taskbar = () => {
 
     const interval = setInterval(() => {
       fetchUserAndLogs();
-    }, 30000); 
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [accessToken, fetchUserAndLogs]);
@@ -97,39 +93,48 @@ const Taskbar = () => {
 
   return (
     <div className="taskbar">
-      <div className="weather-card">
-        <div>🌤️</div>
-        <div className="temp">{weather.temp !== null ? `${weather.temp}°` : '...'}</div>
-        <div>{weather.condition}</div>
-        <div>{weather.date}</div>
+      <div className="weather-section">
+        <div className="weather-info">
+          <div className="location">📍 Улаанбаатар</div>
+          <div className="weather-icon">☀️</div>
+          <div className="temperature">
+            {weather.temp !== null ? `${weather.temp}°` : '...'}
+          </div>
+          <div className="date">Өнөөдөр, {weather.date}</div>
+        </div>
       </div>
 
-      <div className="profile-card">
-        <div>{username}</div>
-        <span>Хувийн хуудас</span>
-      </div>
+      <div className="cards-row">
+        <div className="profile-card">
+          <div className="title">Профайл</div>
+          <div className="name">{username}</div>
+          <div className="link">Хувийн хуудас ➤</div>
+        </div>
 
-      <div className="subscription-card">
-        <div>Premium</div>
-        <span>хүртэл</span>
+        <div className="subscription-card">
+          <div className="title">Төлбөрийн багц</div>
+          <div className="premium">Premium</div>
+          <div className="until">хүртэл</div>
+        </div>
       </div>
 
       <div className="log-section">
         {Array.isArray(logs) && logs.length > 0 ? (
           logs
-            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // latest first
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
             .slice(0, 10)
             .map((log, index) => {
               const [date, time] = log.timestamp
                 ? log.timestamp.split('T')
                 : ['---', '--:--'];
+              const formattedDate = date.replace(/-/g, '.');
 
               return (
                 <div key={index} className="log-entry">
-                  <div className="log-date">{date.replace(/-/g, '.')}</div>
-                  <div className="log-content">
+                  <div className="log-date">{formattedDate}</div>
+                  <div className="log-item">
                     <div className="log-text">
-                      ⚡ {log.power === 'on' ? 'Тэжээл асаалттай' : 'Тэжээл унтарсан'}
+                      {log.message || (log.power === 'on' ? 'Тэжээл асаалттай' : 'Тэжээл унтарсан')}
                     </div>
                     <div className="log-meta">
                       <span>{log.clientId || '-'}</span>
