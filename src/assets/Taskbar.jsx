@@ -1,67 +1,68 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
+
 import '../CSS/Taskbar.css';
 import { useUser } from '../UserContext';
+
 const Taskbar = () => {
   const { accessToken } = useUser();
 
   const [username, setUsername] = useState('User');
   const [weather, setWeather] = useState({ temp: null, condition: '', date: '' });
-  const [logs, setLogs] = useState([]); // ✅ always an array
+  const [logs, setLogs] = useState([]);
 
-  useEffect(() => {
-    if (accessToken) {
-      // ✅ decode name if you want
-      try {
-        const decoded = jwt_decode(accessToken);
-        setUsername(decoded.name || decoded.username || 'User');
-      } catch (error) {
-        console.error('Invalid token:', error);
-      }
-
-      // ✅ fetch user and logs
-      fetchUserAndLogs();
-    }
-  }, [accessToken]);
-
-  const fetchUserAndLogs = async () => {
-    console.log('Access Token:', accessToken);
-
+  const fetchUserAndLogs = useCallback(async () => {
     try {
-      // ✅ Get user from backend with token in header
       const userRes = await axios.get(`http://localhost:3001/users/getuser`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
 
-      console.log('getuser response:', userRes.data);
-
       const userId = userRes.data.user?.id;
-      if (!userId) {
-        console.error('No user ID in getuser response');
-        return;
-      }
+      if (!userId) return;
 
-      const logsRes = await axios.get(`http://localhost:3001/mqtt/powerlogs/${userId}`);
-      console.log('powerlogs response:', logsRes.data);
-      console.log("logs ",logsRes)
+      const logsRes = await axios.get(`http://localhost:3001/mqtt/powerlogs/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
-      const raw = logsRes.data;
-      const logsArray = Array.isArray(raw)
-        ? raw
-        : Array.isArray(raw.logs)
-        ? raw.logs
-        : Array.isArray(raw.data)
-        ? raw.data
-        : [];
+   const raw = logsRes.data;
+   const logsArray = Array.isArray(raw?.logs)
+    ? raw.logs
+    : [];
+
 
       setLogs(logsArray);
-
     } catch (error) {
-      console.error('Failed to fetch user or logs:', error.response ? error.response.data : error);
+      console.error('Failed to fetch user or logs:', error.response?.data || error);
     }
-  };
+  }, [accessToken]);
+
+  useEffect(() => {
+    if (accessToken) {
+      try {
+        const decoded = jwtDecode(accessToken);
+        setUsername(decoded.name || decoded.username || 'User');
+      } catch (error) {
+        console.error('Invalid token:', error);
+      }
+
+      fetchUserAndLogs();
+    }
+  }, [accessToken, fetchUserAndLogs]);
+
+  useEffect(() => {
+    if (!accessToken) return;
+
+    const interval = setInterval(() => {
+      fetchUserAndLogs();
+    }, 30000); 
+
+    return () => clearInterval(interval);
+  }, [accessToken, fetchUserAndLogs]);
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -114,38 +115,34 @@ const Taskbar = () => {
       </div>
 
       <div className="log-section">
-<div className="log-section">
-  {Array.isArray(logs) && logs.length > 0 ? (
-    logs
-      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // most recent first
-      .slice(0, 10)
-      .map((log, index) => {
-        const [date, time] = log.timestamp
-          ? log.timestamp.split('T')
-          : ['---', '--:--'];
+        {Array.isArray(logs) && logs.length > 0 ? (
+          logs
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // latest first
+            .slice(0, 10)
+            .map((log, index) => {
+              const [date, time] = log.timestamp
+                ? log.timestamp.split('T')
+                : ['---', '--:--'];
 
-        return (
-          <div key={index} className="log-entry">
-            <div className="log-date">{date.replace(/-/g, '.')}</div>
-            <div className="log-content">
-              <div className="log-text">
-                ⚡ {log.power === 'on' ? 'Тэжээл асаалттай' : 'Тэжээл унтарсан'}
-              </div>
-              <div className="log-meta">
-                <span>{log.clientId || '-'}</span>
-                <span>{time?.substring(0, 5) || '--:--'}</span>
-              </div>
-            </div>
-          </div>
-        );
-      })
-  ) : (
-    <div>Лог мэдээлэл алга.</div>
-  )}
-</div>
-
-</div>
-
+              return (
+                <div key={index} className="log-entry">
+                  <div className="log-date">{date.replace(/-/g, '.')}</div>
+                  <div className="log-content">
+                    <div className="log-text">
+                      ⚡ {log.power === 'on' ? 'Тэжээл асаалттай' : 'Тэжээл унтарсан'}
+                    </div>
+                    <div className="log-meta">
+                      <span>{log.clientId || '-'}</span>
+                      <span>{time?.substring(0, 5) || '--:--'}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+        ) : (
+          <div>Лог мэдээлэл алга.</div>
+        )}
+      </div>
     </div>
   );
 };
