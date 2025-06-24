@@ -10,6 +10,7 @@ const Home = () => {
   const [userData, setUserData] = useState(null);
   const [loadingSession, setLoadingSession] = useState(true);
   const [mqttDataList, setMqttDataList] = useState({});
+  const [localSwitchStates, setLocalSwitchStates] = useState({});
   const [automationDevice, setAutomationDevice] = useState(null);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -32,7 +33,7 @@ const Home = () => {
                 clientId: device.clientId,
                 entity: device.entity || '',
               });
-              console.log(`[MQTT DATA] ${device.clientId}:`, mqttRes.data); // 🔍 Debug log
+              console.log(`[MQTT DATA] ${device.clientId}:`, mqttRes.data);
 
               return {
                 clientId: device.clientId,
@@ -47,13 +48,19 @@ const Home = () => {
 
         if (isMounted.current) {
           const dataMap = {};
+          const switchMap = {};
           results.forEach((res) => {
-            if (res) dataMap[res.clientId] = { ...res.mqttData };
+            if (res) {
+              dataMap[res.clientId] = res.mqttData.data || {};
+              switchMap[res.clientId] = res.mqttData.data?.status?.power === 'on';
+            }
           });
           setMqttDataList(dataMap);
+          setLocalSwitchStates(switchMap); // ✅ sync switch states
         }
       } else {
         setMqttDataList({});
+        setLocalSwitchStates({});
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -63,76 +70,64 @@ const Home = () => {
   }, [logout, navigate]);
 
   const toggleDevice = useCallback(
-    async (clientId, currentState) => {
+    async (clientId, currentState, entity) => {
       const newState = currentState === 'on' ? 'off' : 'on';
+      const newChecked = newState === 'on';
 
-      setMqttDataList((prev) => ({
+      // ✅ Flip switch immediately
+      setLocalSwitchStates((prev) => ({
         ...prev,
-        [clientId]: {
-          ...prev[clientId],
-          status: {
-            ...prev[clientId]?.status,
-            power: newState,
-          },
-        },
+        [clientId]: newChecked,
       }));
 
       try {
-        await axiosInstance.post('/mqtt/toggle', { clientId, state: newState });
-
-        const device = userData?.user?.devices.find((d) => d.clientId === clientId);
-        const entity = device?.entity || '';
+        await axiosInstance.post('/mqtt/toggle', {
+          clientId,
+          entity: entity || '',
+          state: newState,
+        });
 
         const mqttRes = await axiosInstance.post('/mqtt/data', {
           clientId,
-          entity,
+          entity: entity || '',
         });
-        console.log(`[MQTT TOGGLE DATA] ${clientId}:`, mqttRes.data); // 🔍 Debug log
+        console.log(`[MQTT TOGGLE DATA] ${clientId}:`, mqttRes.data);
 
         if (isMounted.current) {
           setMqttDataList((prev) => ({
             ...prev,
-            [clientId]: { ...mqttRes.data },
+            [clientId]: mqttRes.data.data || {},
+          }));
+          setLocalSwitchStates((prev) => ({
+            ...prev,
+            [clientId]: mqttRes.data.data?.status?.power === 'on',
           }));
         }
       } catch (error) {
         console.error('Error toggling device:', error);
-        setMqttDataList((prev) => ({
-          ...prev,
-          [clientId]: {
-            ...prev[clientId],
-            status: {
-              ...prev[clientId]?.status,
-              power: currentState,
-            },
-          },
-        }));
       }
-    },
-    [userData]
-  );
-
-  const openAutomationModal = useCallback(
-    async (device) => {
-      try {
-        const res = await axiosInstance.post('/devices/getAutomationRule', {
-          clientId: device.clientId,
-          entity: device.entity || '',
-        });
-        const rule = res.data;
-        setStartTime(rule?.onTime || '');
-        setEndTime(rule?.offTime || '');
-        setCurrentRuleId(rule?._id || '');
-      } catch (error) {
-        console.error('Error fetching automation rule:', error);
-        setStartTime('');
-        setEndTime('');
-        setCurrentRuleId('');
-      }
-      setAutomationDevice(device);
     },
     []
   );
+
+  const openAutomationModal = useCallback(async (device) => {
+    try {
+      const res = await axiosInstance.post('/devices/getAutomationRule', {
+        clientId: device.clientId,
+        entity: device.entity || '',
+      });
+      const rule = res.data;
+      setStartTime(rule?.onTime || '');
+      setEndTime(rule?.offTime || '');
+      setCurrentRuleId(rule?._id || '');
+    } catch (error) {
+      console.error('Error fetching automation rule:', error);
+      setStartTime('');
+      setEndTime('');
+      setCurrentRuleId('');
+    }
+    setAutomationDevice(device);
+  }, []);
 
   const handleAutomationSubmit = useCallback(
     async (e) => {
@@ -213,8 +208,8 @@ const Home = () => {
                 key={device._id || device.clientId}
                 Icon={() => <span />}
                 title={device.clientId}
-                isChecked={powerState === 'on'}
-                onToggle={() => toggleDevice(device.clientId, powerState)}
+                isChecked={localSwitchStates[device.clientId] ?? false}
+                onToggle={() => toggleDevice(device.clientId, powerState, device.entity)}
                 status={status}
                 onAutomationClick={() => openAutomationModal(device)}
               >
@@ -246,7 +241,6 @@ const Home = () => {
                     {deviceData.status?.message?.startsWith('LWT:') && (
                       <p className="lwtStatus">🔗 {deviceData.status.message.slice(4).trim()}</p>
                     )}
-                    <pre className="debugJson">{JSON.stringify(deviceData, null, 2)}</pre>
                   </div>
                 ) : (
                   <p>Loading data for {device.clientId}...</p>
