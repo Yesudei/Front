@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../UserContext';
 import viotLogo from '../assets/viot.png';
-import DarkModeToggle from '../assets/DarkModeToggle'; 
+import DarkModeToggle from './DarkModeToggle'; 
 
 function Header() {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -55,7 +55,6 @@ function Header() {
 <div className="header-right">
   <DarkModeToggle />
 
-  {/* ✅ Wrap user button + dropdown */}
   <div className="user-menu">
     <button
       ref={buttonRef}
@@ -69,7 +68,6 @@ function Header() {
 
     {showDropdown && (
       <ul className="user-dropdown" role="menu" aria-label="User menu">
-        <li>Settings</li>
         <li onClick={handleLogout}>Logout</li>
       </ul>
     )}

@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaHome } from 'react-icons/fa';
 import { AiOutlineThunderbolt } from 'react-icons/ai';
 import { CgProfile } from 'react-icons/cg';
-import { LuListTodo } from 'react-icons/lu';
 import '../CSS/Sidebar.css';
 
 function Sidebar() {
@@ -14,7 +13,7 @@ function Sidebar() {
 
   const toggleList = () => setShowList(!showList);
   
-  React.useEffect(() => {
+  useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 992) {
         setSidebarVisible(true);
@@ -38,7 +37,7 @@ function Sidebar() {
       </button>
 
       {sidebarVisible && (
-        <nav id="sidebar" aria-label="Sidebar navigation">
+        <nav id="sidebar" className="sidebar" aria-label="Sidebar navigation">
           <div
             className="sidebar-dropdown"
             onClick={toggleList}
@@ -81,8 +80,8 @@ function Sidebar() {
             <li className="sidebar-list-item">
               <Link to="/profile"><CgProfile className="icon" /> Profile</Link>
             </li>
-            <li className="sidebar-list-item">
-              <Link to="/todo"><LuListTodo className="icon" /> To Do</Link>
+            <li className='sidebar-list-item'>
+              <Link to="/devices"> Devices</Link>
             </li>
           </ul>
         </nav>

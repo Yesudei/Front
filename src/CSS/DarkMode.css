@@ -6,13 +6,15 @@ body.dark .home-layout,
 body.dark .main-content,
 body.dark .page-content,
 body.dark .content-wrapper {
-  background-color: #121212 !important;
+  background-color: #1e1e2c !important;
   color: #f0f0f0;
+    transition: transform 0.2s;
 }
 body.dark .grid-container {
-  background-color: #121212;
+  background-color: #1e1e2c;
   color: #f0f0f0;
   min-height: 100vh;
+  
 }
 body.dark .main-container {
   background-color: transparent; /* transparent so grid covers it */
@@ -90,10 +92,7 @@ body.dark .user-dropdown li{
   background-color: #1e1e2f;
   color: #f0f0f0;
 }
-.user-dropdown li:last-child{
-    background-color: #1e1e2f;
-  color: #f0f0f0;
-}
+
 
 /* ✅ TASKBAR */
 body.dark .taskbar {

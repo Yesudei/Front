@@ -1,8 +1,8 @@
 import React from 'react';
-import Header from '../assets/Header';
-import Sidebar from '../assets/Sidebar';
+import Header from './Header';
+import Sidebar from './Sidebar';
 import { Outlet } from 'react-router-dom';
-import Taskbar from '../assets/Taskbar';
+import Taskbar from './Taskbar';
 import '../App.css';
 
 function Layout() {

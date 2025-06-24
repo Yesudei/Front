@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../CSS/loginform.css';
+import axiosInstance from '../axiosInstance';
+import AuthPage from './AuthPage';
 
-const API_BASE_URL = 'http://localhost:3001';
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
@@ -27,24 +28,25 @@ const ResetPassword = () => {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/otp/reset_password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber, newPassword }),
+      const res = await axiosInstance.post('/otp/reset_password', {
+        phoneNumber,
+        newPassword,
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.msg || 'Reset failed');
+      // Optional: check response status
+      if (res.status !== 200) throw new Error(res.data?.msg || 'Reset failed');
 
       setSuccess('Password changed successfully!');
       setError('');
       setTimeout(() => navigate('/login'), 1500);
     } catch (err) {
-      setError(err.message);
+      console.error('Reset password error:', err);
+      setError(err.response?.data?.msg || err.message);
     }
   };
 
   return (
+    <AuthPage>
     <div className="wrapper">
       <div className="form-header">
         <h1>Reset Password</h1>
@@ -87,7 +89,8 @@ const ResetPassword = () => {
           Change Password
         </button>
       </form>
-    </div>
+      </div>
+      </AuthPage>
   );
 };
 

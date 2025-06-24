@@ -248,8 +248,7 @@ const Automation = () => {
       {Object.entries(deviceRules).map(([deviceId, rules]) => (
         <div key={deviceId} className="device-box">
           <h2>Device: {deviceId}</h2>
-
-          {/* Add Timer Form or Button */}
+          
           {addingForDevice === deviceId ? (
             <form className="rule-card edit-form" onSubmit={handleAddSubmit}>
               <p><strong>Topic:</strong> {`cmnd/${deviceId}/POWER`}</p>

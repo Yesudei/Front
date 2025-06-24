@@ -76,3 +76,11 @@
 .dropdown-scroll li:hover {
   background-color: #ddd;
 }
+/* Highlight active sidebar link */
+.sidebar-list-item > a.active {
+  padding: 10px 10px;
+  background-color: rgba(41, 98, 255, 0.3); /* light blue highlight */
+  color: white; /* matching blue text */
+  font-weight: bold;
+  border-radius: 12px;
+}

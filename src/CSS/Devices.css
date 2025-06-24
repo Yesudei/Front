@@ -1,0 +1,44 @@
+.devices-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f9f9f9;
+}
+
+.devices-content {
+  margin-left: 250px; /* equal to sidebar width */
+  padding: 2rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.device-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.device-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.device-item button {
+  background-color: #3b82f6;
+  border: none;
+  color: white;
+  padding: 0.4rem 1rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.device-item button:hover {
+  background-color: #2563eb;
+}

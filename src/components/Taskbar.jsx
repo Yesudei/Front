@@ -1,39 +1,39 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
-
 import '../CSS/Taskbar.css';
 import { useUser } from '../UserContext';
+import axiosInstance from '../axiosInstance';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Taskbar = () => {
   const { accessToken } = useUser();
-
   const [username, setUsername] = useState('User');
   const [weather, setWeather] = useState({ temp: null, condition: '', date: '' });
   const [logs, setLogs] = useState([]);
+  const navigate = useNavigate();
 
   const fetchUserAndLogs = useCallback(async () => {
     try {
-      const userRes = await axios.get(`http://localhost:3001/users/getuser`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      if (!accessToken) return;
 
-      const userId = userRes.data.user?.id;
+      const userRes = await axiosInstance.get('/users/getuser');
+      const userId = userRes.data.user?.id || userRes.data.user?._id;
       if (!userId) return;
 
-      const logsRes = await axios.get(`http://localhost:3001/mqtt/powerlogs/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      const raw = logsRes.data;
-      const logsArray = Array.isArray(raw?.logs) ? raw.logs : [];
+      // Fetch power logs
+      const logsRes = await axiosInstance.get(`/mqtt/powerlogs/${userId}`);
+      const rawLogs = logsRes.data;
+      const logsArray = Array.isArray(rawLogs?.logs) ? rawLogs.logs : [];
       setLogs(logsArray);
+
+      // POST to /mqtt/data with clientId and entity (replace 'yourEntityHere'!)
+      await axiosInstance.post('/mqtt/data', {
+        clientId: userId,
+        entity: 'yourEntityHere', // TODO: Replace with actual entity if available
+      });
     } catch (error) {
-      console.error('Failed to fetch user or logs:', error.response?.data || error);
+      console.error('Failed to fetch user, logs, or post data:', error.response?.data || error);
     }
   }, [accessToken]);
 
@@ -55,7 +55,7 @@ const Taskbar = () => {
 
     const interval = setInterval(() => {
       fetchUserAndLogs();
-    }, 30000);
+    }, 30000); // refresh logs every 30 seconds
 
     return () => clearInterval(interval);
   }, [accessToken, fetchUserAndLogs]);
@@ -64,15 +64,16 @@ const Taskbar = () => {
     const fetchWeather = async () => {
       try {
         const response = await axios.get(
-          `https://api.open-meteo.com/v1/forecast?latitude=47.92&longitude=106.92&current=temperature_2m,weathercode&timezone=auto`
+          'https://api.open-meteo.com/v1/forecast?latitude=47.92&longitude=106.92&current_weather=true&timezone=auto'
         );
-        const current = response.data.current;
-        const temp = current.temperature_2m;
+        const current = response.data.current_weather;
+        if (!current) return;
+
+        const temp = current.temperature;
         const code = current.weathercode;
         const today = new Date().toISOString().split('T')[0].replace(/-/g, '.');
 
-        const weatherDescription = getWeatherDescription(code);
-        setWeather({ temp, condition: weatherDescription, date: today });
+        setWeather({ temp, condition: getWeatherDescription(code), date: today });
       } catch (error) {
         console.error('Weather fetch error:', error);
       }
@@ -97,24 +98,32 @@ const Taskbar = () => {
         <div className="weather-info">
           <div className="location">📍 Улаанбаатар</div>
           <div className="weather-icon">☀️</div>
-          <div className="temperature">
-            {weather.temp !== null ? `${weather.temp}°` : '...'}
-          </div>
+          <div className="temperature">{weather.temp !== null ? `${weather.temp}°` : '...'}</div>
           <div className="date">Өнөөдөр, {weather.date}</div>
         </div>
       </div>
 
       <div className="cards-row">
-        <div className="profile-card">
+        <div
+          className="profile-card"
+          onClick={() => navigate('/profile')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') navigate('/profile');
+          }}
+          aria-label="Go to profile page"
+          style={{ cursor: 'pointer' }}
+        >
           <div className="title">Профайл</div>
           <div className="name">{username}</div>
           <div className="link">Хувийн хуудас ➤</div>
         </div>
 
         <div className="subscription-card">
-          <div className="title">Төлбөрийн багц</div>
-          <div className="premium">Premium</div>
-          <div className="until">хүртэл</div>
+          <div className="title">?</div>
+          <div className="premium">Nettspend</div>
+          <div className="until">?</div>
         </div>
       </div>
 
@@ -124,9 +133,7 @@ const Taskbar = () => {
             .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
             .slice(0, 10)
             .map((log, index) => {
-              const [date, time] = log.timestamp
-                ? log.timestamp.split('T')
-                : ['---', '--:--'];
+              const [date, time] = log.timestamp ? log.timestamp.split('T') : ['---', '--:--'];
               const formattedDate = date.replace(/-/g, '.');
 
               return (

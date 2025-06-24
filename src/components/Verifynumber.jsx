@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../CSS/loginform.css';
+import AuthPage from './AuthPage';
 
 const OTP_LENGTH = 6;
 
@@ -14,49 +15,54 @@ const VerifyNumber = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const phoneNumber = location.state?.phoneNumber || '';
-  const mode = location.state?.mode || 'register';
+  const rawPhone = location.state?.phoneNumber || '';
+  const phoneNumber = rawPhone.replace(/\D/g, ''); // always digits only
+  const mode = location.state?.mode === 'reset' ? 'reset' : 'register';
 
-useEffect(() => {
-  const otpAlreadySent = location.state?.otpSent;
+  useEffect(() => {
+    const otpAlreadySent = location.state?.otpSent;
 
-  if (!phoneNumber) {
-    setError('No phone number provided');
-    setSending(false);
-    return;
-  }
-
-  if (otpAlreadySent) {
-    setMessage('OTP has already been sent');
-    setSending(false);
-    return;
-  }
-
-  const sendOtp = async () => {
-    try {
-      const url = mode === 'reset'
-        ? 'http://localhost:3001/otp/forgot_pass'
-        : 'http://localhost:3001/otp/verify';
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber, authType: mode }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Failed to send OTP');
-      setMessage('OTP sent successfully');
-    } catch (err) {
-      setError('Error sending OTP: ' + err.message);
-    } finally {
+    if (!phoneNumber) {
+      setError('No phone number provided');
       setSending(false);
+      return;
     }
-  };
 
-  sendOtp();
-}, [phoneNumber, mode, location.state]);
+    if (otpAlreadySent) {
+      setMessage('OTP has already been sent');
+      setSending(false);
+      return;
+    }
 
+    const sendOtp = async () => {
+      try {
+        const url = mode === 'reset'
+          ? 'http://localhost:3001/otp/forgot_pass'
+          : 'http://localhost:3001/otp/verify';
+
+        const payload = mode === 'reset'
+          ? { phoneNumber: Number(phoneNumber) }
+          : { phoneNumber, authType: mode };
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Failed to send OTP');
+
+        setMessage('OTP sent successfully');
+      } catch (err) {
+        setError('Error sending OTP: ' + err.message);
+      } finally {
+        setSending(false);
+      }
+    };
+
+    sendOtp();
+  }, [phoneNumber, mode, location.state]);
 
   const handleChange = (e, index) => {
     const value = e.target.value.replace(/\D/, '');
@@ -89,6 +95,8 @@ useEffect(() => {
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
+    setError('');
+    setMessage('');
 
     const finalOtp = otp.join('');
     if (finalOtp.length !== OTP_LENGTH) {
@@ -102,7 +110,7 @@ useEffect(() => {
         : 'http://localhost:3001/otp/verify';
 
       const payload = mode === 'reset'
-        ? { phoneNumber, code: finalOtp, authType: mode }
+        ? { phoneNumber: Number(phoneNumber), code: finalOtp, authType: mode }
         : { phoneNumber, code: finalOtp };
 
       const response = await fetch(url, {
@@ -115,6 +123,7 @@ useEffect(() => {
       if (!response.ok) throw new Error(data.message || 'OTP verification failed');
 
       setMessage('OTP verified successfully!');
+
       if (mode === 'reset') {
         navigate('/reset-password', { state: { phoneNumber } });
       } else {
@@ -126,6 +135,7 @@ useEffect(() => {
   };
 
   return (
+    <AuthPage>
     <div className="wrapper">
       <div className="form-header">
         <h1>Enter OTP</h1>
@@ -163,7 +173,8 @@ useEffect(() => {
           <button type="submit" className="login-btn">Verify OTP</button>
         </form>
       )}
-    </div>
+      </div>
+      </AuthPage>
   );
 };
 

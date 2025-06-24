@@ -3,21 +3,23 @@ import { Routes, Route } from 'react-router-dom';
 import { useUser, UserProvider } from './UserContext';
 import { setupInterceptors } from './axiosInstance';
 
-import Home from './assets/Home';
+import Home from './components/Home';
 import LoginForm from './components/Loginform';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/layout';
-import Register from './assets/Register';
-import VerifyNumber from './assets/Verifynumber';
-import ResetPassword from './assets/ResetPassword';
-import ResetPhoneEntry from './assets/ResetPhoneEntry';
-import Automation from './assets/Automation';
-import DarkModeToggle from './assets/DarkModeToggle'; 
+import Register from './components/Register';
+import VerifyNumber from './components/Verifynumber';
+import ResetPassword from './components/ResetPassword';
+import ResetPhoneEntry from './components/ResetPhoneEntry';
+import Automation from './components/Automation';
+import DarkModeToggle from './components/DarkModeToggle'; 
+import Profile from './components/Profile';
+import Devices from './components/Devices';
 
 const AppRoutes = () => {
   const user = useUser();
 
-  // ✅ Setup the interceptor once the UserProvider is ready
+  // Setup the interceptor once the UserProvider is ready
   useEffect(() => {
     setupInterceptors(user);
   }, [user]);
@@ -28,13 +30,16 @@ const AppRoutes = () => {
 
   return (
     <Routes>
+      {/* Public routes */}
       <Route path="/login" element={<LoginForm />} />
       <Route path="/register" element={<Register />} />
       <Route path="/verify-number" element={<VerifyNumber />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/reset-phone" element={<ResetPhoneEntry />} />
-      <Route path="/Automation" element={<Automation />} />
-      <Route path="/Automation/:clientId" element={<Automation />} />
+      <Route path="/automation" element={<Automation />} />
+      <Route path="/automation/:clientId" element={<Automation />} />
+
+      {/* Protected routes wrapped with Layout and Sidebar */}
       <Route
         path="/"
         element={
@@ -44,7 +49,9 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<Home />} />
-        {/* other protected routes */}
+        <Route path="profile" element={<Profile />} />
+        <Route path="devices" element={<Devices />} />
+        {/* Add other protected child routes here */}
       </Route>
     </Routes>
   );
@@ -53,7 +60,6 @@ const AppRoutes = () => {
 function App() {
   return (
     <UserProvider>
-      <DarkModeToggle />
       <AppRoutes />
     </UserProvider>
   );

@@ -16,21 +16,15 @@ function DarkModeToggle() {
   const toggleDarkMode = () => setIsDark(!isDark);
 
   return (
-    <button
-      onClick={toggleDarkMode}
-      aria-label="Toggle dark mode"
-      style={{
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer',
-        fontSize: '20px',
-        padding: '0',
-        margin: '0',
-        lineHeight: '1',
-      }}
-    >
-      {isDark ? '🌞' : '🌙'}
-    </button>
+    <label className="switch">
+      <input
+        type="checkbox"
+        checked={isDark}
+        onChange={toggleDarkMode}
+        aria-label="Toggle dark mode"
+      />
+      <span className="slider"></span>
+    </label>
   );
 }
 
