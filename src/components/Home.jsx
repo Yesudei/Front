@@ -17,7 +17,7 @@ const Home = () => {
   const isMounted = useRef(true);
   const navigate = useNavigate();
 
-  // Fetch user + MQTT data (with clientId AND entity)
+  // Fetch user + MQTT data (POST to /mqtt/data)
   const fetchUserData = useCallback(async () => {
     try {
       const data = await axiosInstance.get('/users/getuser');
@@ -29,10 +29,11 @@ const Home = () => {
         const results = await Promise.all(
           devices.map(async (device) => {
             try {
-              // Send both clientId and entity as query params
-              const mqttRes = await axiosInstance.get(
-                `/mqtt/data?clientId=${device.clientId}&entity=${device.entity || ''}`
-              );
+              // Use POST instead of GET here
+              const mqttRes = await axiosInstance.post('/mqtt/data', {
+                clientId: device.clientId,
+                entity: device.entity || '',
+              });
               return {
                 clientId: device.clientId,
                 mqttData: mqttRes.data,
@@ -61,7 +62,7 @@ const Home = () => {
     }
   }, [logout, navigate]);
 
-  // Toggle device power on/off + fetch updated data (with entity)
+  // Toggle device power on/off + fetch updated data (POST to /mqtt/data)
   const toggleDevice = useCallback(
     async (clientId, currentState) => {
       const newState = currentState === 'on' ? 'off' : 'on';
@@ -84,9 +85,12 @@ const Home = () => {
         const device = userData?.user?.devices.find((d) => d.clientId === clientId);
         const entity = device?.entity || '';
 
-        const mqttRes = await axiosInstance.get(
-          `/mqtt/data?clientId=${clientId}&entity=${entity}`
-        );
+        // Use POST here also
+        const mqttRes = await axiosInstance.post('/mqtt/data', {
+          clientId,
+          entity,
+        });
+
         if (isMounted.current) {
           setMqttDataList((prev) => ({
             ...prev,

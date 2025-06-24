@@ -17,21 +17,44 @@ const Taskbar = () => {
     try {
       if (!accessToken) return;
 
+      // Decode token for username display
+      try {
+        const decoded = jwtDecode(accessToken);
+        setUsername(decoded.name || decoded.username || 'User');
+      } catch {
+        setUsername('User');
+      }
+
+      // Get user info (optional)
       const userRes = await axiosInstance.get('/users/getuser');
       const userId = userRes.data.user?.id || userRes.data.user?._id;
       if (!userId) return;
 
+      // Get all connected devices (or devices owned by user)
+      const devicesRes = await axiosInstance.get('/mqtt/getAllDevices');
+      const devices = devicesRes.data.devices || [];
+
+      if (devices.length === 0) {
+        console.warn('No devices found for user');
+        return;
+      }
+
+      // Pick first device and entity
+      const firstDevice = devices[0];
+      const clientId = firstDevice.clientId;
+      const entity = firstDevice.entity || 'SI7021'; // Replace with real entity if possible
+
       // Fetch power logs
-      const logsRes = await axiosInstance.get(`/mqtt/powerlogs/${userId}`);
+      const logsRes = await axiosInstance.get('/mqtt/powerlogs');
       const rawLogs = logsRes.data;
       const logsArray = Array.isArray(rawLogs?.logs) ? rawLogs.logs : [];
       setLogs(logsArray);
 
-      // POST to /mqtt/data with clientId and entity (replace 'yourEntityHere'!)
-      await axiosInstance.post('/mqtt/data', {
-        clientId: userId,
-        entity: 'yourEntityHere', // TODO: Replace with actual entity if available
-      });
+      // POST to /mqtt/data with clientId and entity
+      const dataRes = await axiosInstance.post('/mqtt/data', { clientId, entity });
+      if (!dataRes.data.success) {
+        console.warn('No sensor data:', dataRes.data.message);
+      }
     } catch (error) {
       console.error('Failed to fetch user, logs, or post data:', error.response?.data || error);
     }
@@ -39,13 +62,6 @@ const Taskbar = () => {
 
   useEffect(() => {
     if (accessToken) {
-      try {
-        const decoded = jwtDecode(accessToken);
-        setUsername(decoded.name || decoded.username || 'User');
-      } catch (error) {
-        console.error('Invalid token:', error);
-      }
-
       fetchUserAndLogs();
     }
   }, [accessToken, fetchUserAndLogs]);
