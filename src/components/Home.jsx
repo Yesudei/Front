@@ -17,7 +17,6 @@ const Home = () => {
   const isMounted = useRef(true);
   const navigate = useNavigate();
 
-  // Fetch user + MQTT data (POST to /mqtt/data)
   const fetchUserData = useCallback(async () => {
     try {
       const data = await axiosInstance.get('/users/getuser');
@@ -29,11 +28,12 @@ const Home = () => {
         const results = await Promise.all(
           devices.map(async (device) => {
             try {
-              // Use POST instead of GET here
               const mqttRes = await axiosInstance.post('/mqtt/data', {
                 clientId: device.clientId,
                 entity: device.entity || '',
               });
+              console.log(`[MQTT DATA] ${device.clientId}:`, mqttRes.data); // 🔍 Debug log
+
               return {
                 clientId: device.clientId,
                 mqttData: mqttRes.data,
@@ -62,7 +62,6 @@ const Home = () => {
     }
   }, [logout, navigate]);
 
-  // Toggle device power on/off + fetch updated data (POST to /mqtt/data)
   const toggleDevice = useCallback(
     async (clientId, currentState) => {
       const newState = currentState === 'on' ? 'off' : 'on';
@@ -81,15 +80,14 @@ const Home = () => {
       try {
         await axiosInstance.post('/mqtt/toggle', { clientId, state: newState });
 
-        // Find device to get entity
         const device = userData?.user?.devices.find((d) => d.clientId === clientId);
         const entity = device?.entity || '';
 
-        // Use POST here also
         const mqttRes = await axiosInstance.post('/mqtt/data', {
           clientId,
           entity,
         });
+        console.log(`[MQTT TOGGLE DATA] ${clientId}:`, mqttRes.data); // 🔍 Debug log
 
         if (isMounted.current) {
           setMqttDataList((prev) => ({
@@ -114,7 +112,6 @@ const Home = () => {
     [userData]
   );
 
-  // Open automation modal
   const openAutomationModal = useCallback(
     async (device) => {
       try {
@@ -137,7 +134,6 @@ const Home = () => {
     []
   );
 
-  // Submit automation form
   const handleAutomationSubmit = useCallback(
     async (e) => {
       e.preventDefault();
@@ -250,6 +246,7 @@ const Home = () => {
                     {deviceData.status?.message?.startsWith('LWT:') && (
                       <p className="lwtStatus">🔗 {deviceData.status.message.slice(4).trim()}</p>
                     )}
+                    <pre className="debugJson">{JSON.stringify(deviceData, null, 2)}</pre>
                   </div>
                 ) : (
                   <p>Loading data for {device.clientId}...</p>
