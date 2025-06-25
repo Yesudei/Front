@@ -12,14 +12,12 @@ import VerifyNumber from './components/Verifynumber';
 import ResetPassword from './components/ResetPassword';
 import ResetPhoneEntry from './components/ResetPhoneEntry';
 import Automation from './components/Automation';
-import DarkModeToggle from './components/DarkModeToggle'; 
 import Profile from './components/Profile';
 import Devices from './components/Devices';
 
 const AppRoutes = () => {
   const user = useUser();
 
-  // Setup the interceptor once the UserProvider is ready
   useEffect(() => {
     setupInterceptors(user);
   }, [user]);
@@ -36,10 +34,8 @@ const AppRoutes = () => {
       <Route path="/verify-number" element={<VerifyNumber />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/reset-phone" element={<ResetPhoneEntry />} />
-      <Route path="/automation" element={<Automation />} />
-      <Route path="/automation/:clientId" element={<Automation />} />
 
-      {/* Protected routes wrapped with Layout and Sidebar */}
+      {/* Protected routes wrapped with Layout */}
       <Route
         path="/"
         element={
@@ -48,10 +44,14 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
+        {/* Nested routes render inside Layout */}
         <Route index element={<Home />} />
         <Route path="profile" element={<Profile />} />
         <Route path="devices" element={<Devices />} />
-        {/* Add other protected child routes here */}
+
+        {/* Automation inside layout */}
+        <Route path="automation" element={<Automation />} />
+        <Route path="automation/:clientId" element={<Automation />} />
       </Route>
     </Routes>
   );

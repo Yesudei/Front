@@ -110,16 +110,22 @@ const Home = () => {
     []
   );
 
+  // FIXED: Use GET with query params for fetching automation rules
   const openAutomationModal = useCallback(async (device) => {
     try {
-      const res = await axiosInstance.post('/devices/getAutomationRule', {
-        clientId: device.clientId,
-        entity: device.entity || '',
+      const res = await axiosInstance.get('/mqtt/getRule', {
+        params: {
+          clientId: device.clientId,
+          entity: device.entity || '',
+        },
       });
-      const rule = res.data;
-      setStartTime(rule?.onTime || '');
-      setEndTime(rule?.offTime || '');
-      setCurrentRuleId(rule?._id || '');
+
+      const rules = res.data.rules || [];
+      const firstRule = rules.length > 0 ? rules[0] : null;
+
+      setStartTime(firstRule?.onTime || '');
+      setEndTime(firstRule?.offTime || '');
+      setCurrentRuleId(firstRule?._id || '');
     } catch (error) {
       console.error('Error fetching automation rule:', error);
       setStartTime('');
@@ -129,6 +135,7 @@ const Home = () => {
     setAutomationDevice(device);
   }, []);
 
+  // FIXED: Use PUT /mqtt/update for update, POST /mqtt/automation for new rule
   const handleAutomationSubmit = useCallback(
     async (e) => {
       e.preventDefault();
@@ -136,14 +143,14 @@ const Home = () => {
 
       try {
         if (currentRuleId) {
-          await axiosInstance.post('/devices/updateRule', {
+          await axiosInstance.put('/mqtt/update', {
             ruleId: currentRuleId,
             onTime: startTime,
             offTime: endTime,
             timezone: 'Asia/Ulaanbaatar',
           });
         } else {
-          await axiosInstance.post('/devices/automation', {
+          await axiosInstance.post('/mqtt/automation', {
             clientId: automationDevice.clientId,
             entity: automationDevice.entity || '',
             onTime: startTime,

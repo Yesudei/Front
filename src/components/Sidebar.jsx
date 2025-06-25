@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FaHome } from 'react-icons/fa';
 import { AiOutlineThunderbolt } from 'react-icons/ai';
 import { CgProfile } from 'react-icons/cg';
+import { MdDevices } from "react-icons/md";
 import '../CSS/Sidebar.css';
 
 function Sidebar() {
@@ -81,7 +82,7 @@ function Sidebar() {
               <Link to="/profile"><CgProfile className="icon" /> Profile</Link>
             </li>
             <li className='sidebar-list-item'>
-              <Link to="/devices"> Devices</Link>
+              <Link to="/devices"><MdDevices className='icon' /> Devices</Link>
             </li>
           </ul>
         </nav>

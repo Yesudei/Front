@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axiosInstance from '../axiosInstance'; // configured axios with interceptors
+import axiosInstance from '../axiosInstance';
 import { useUser } from '../UserContext';
 import '../CSS/Devices.css';
 
@@ -8,7 +8,6 @@ const Devices = () => {
   const [registeredDevices, setRegisteredDevices] = useState([]);
   const { user } = useUser();
 
-  // Fetch all devices from MQTT server
   const fetchAllDevices = async () => {
     try {
       const response = await axiosInstance.get('/mqtt/getAllDevices');
@@ -19,7 +18,6 @@ const Devices = () => {
     }
   };
 
-  // Fetch user registered devices
   const fetchRegisteredDevices = async () => {
     try {
       const response = await axiosInstance.get('/users/getuser');
@@ -30,7 +28,6 @@ const Devices = () => {
     }
   };
 
-  // Register a device for this user
   const registerDevice = async (device) => {
     try {
       await axiosInstance.post('/device/registerDevices', {
@@ -39,12 +36,28 @@ const Devices = () => {
         type: device.type || 'th',
       });
       alert(`Device ${device.clientId} registered!`);
-      // Refresh lists after registering
-      await fetchAllDevices();
-      await fetchRegisteredDevices();
+      fetchAllDevices();
+      fetchRegisteredDevices();
     } catch (err) {
       console.error('Registration failed:', err);
       alert('Failed to register device.');
+    }
+  };
+
+  const unregisterDevice = async (device) => {
+    try {
+      await axiosInstance.delete('/device/deleteDevice', {
+        data: {
+          clientId: device.clientId,
+          entity: device.entity || 'SI7021'
+        },
+      });
+      alert(`Device ${device.clientId} unregistered!`);
+      fetchAllDevices();
+      fetchRegisteredDevices();
+    } catch (err) {
+      console.error('Unregistration failed:', err);
+      alert('Failed to unregister device.');
     }
   };
 
@@ -53,25 +66,53 @@ const Devices = () => {
     fetchRegisteredDevices();
   }, []);
 
-  // Filter devices that are NOT registered yet
   const unregisteredDevices = allDevices.filter(
     (d) => !registeredDevices.some((rd) => rd.clientId === d.clientId)
   );
 
   return (
     <div className="devices-page">
-      <h1>All Available Devices</h1>
-      {unregisteredDevices.length === 0 && <p>No unregistered devices found.</p>}
-      <ul className="device-list">
-        {unregisteredDevices.map((device) => (
-          <li key={device.clientId} className="device-item">
-            <div>
-              <strong>{device.clientId}</strong> — {device.entity || 'Unknown Entity'}
-            </div>
-            <button onClick={() => registerDevice(device)}>Register</button>
-          </li>
-        ))}
-      </ul>
+      <h1 className="devices-title">Devices</h1>
+
+      <div className="devices-columns">
+        {/* Registered Devices */}
+        <div className="device-column">
+          <h2>Registered Devices</h2>
+          {registeredDevices.length === 0 ? (
+            <p>No registered devices.</p>
+          ) : (
+            <ul className="device-list">
+              {registeredDevices.map((device) => (
+                <li key={device.clientId} className="device-item">
+                  <div>
+                    <strong>{device.clientId}</strong> — {device.entity || 'Unknown Entity'}
+                  </div>
+                  <button onClick={() => unregisterDevice(device)}>Unregister</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Unregistered Devices */}
+        <div className="device-column">
+          <h2>Unregistered Devices</h2>
+          {unregisteredDevices.length === 0 ? (
+            <p>No unregistered devices found.</p>
+          ) : (
+            <ul className="device-list">
+              {unregisteredDevices.map((device) => (
+                <li key={device.clientId} className="device-item">
+                  <div>
+                    <strong>{device.clientId}</strong> — {device.entity || 'Unknown Entity'}
+                  </div>
+                  <button onClick={() => registerDevice(device)}>Register</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

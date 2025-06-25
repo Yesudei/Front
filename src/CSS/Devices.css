@@ -1,14 +1,37 @@
-.devices-layout {
-  display: flex;
-  min-height: 100vh;
-  background: #f9f9f9;
+.devices-page {
+  padding: 2rem;
+  background-color: #f9f9f9;
 }
 
-.devices-content {
-  margin-left: 250px; /* equal to sidebar width */
-  padding: 2rem;
+.devices-title {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  font-weight: 600;
+}
+
+.devices-columns {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.device-column {
   flex: 1;
-  overflow-y: auto;
+  min-width: 300px;
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.device-column h2 {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  color: #222;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.5rem;
 }
 
 .device-list {
@@ -24,8 +47,8 @@
   padding: 1rem;
   border: 1px solid #ddd;
   margin-bottom: 1rem;
-  border-radius: 4px;
-  background: #fff;
+  border-radius: 6px;
+  background: #f9f9f9;
 }
 
 .device-item button {
@@ -41,4 +64,15 @@
 
 .device-item button:hover {
   background-color: #2563eb;
+}
+
+/* Optional: better mobile responsiveness */
+@media (max-width: 768px) {
+  .devices-columns {
+    flex-direction: column;
+  }
+
+  .device-column {
+    width: 100%;
+  }
 }
