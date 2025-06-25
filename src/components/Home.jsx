@@ -56,7 +56,7 @@ const Home = () => {
             }
           });
           setMqttDataList(dataMap);
-          setLocalSwitchStates(switchMap); // ✅ sync switch states
+          setLocalSwitchStates(switchMap);
         }
       } else {
         setMqttDataList({});
@@ -69,48 +69,57 @@ const Home = () => {
     }
   }, [logout, navigate]);
 
-  const toggleDevice = useCallback(
-    async (clientId, currentState, entity) => {
-      const newState = currentState === 'on' ? 'off' : 'on';
-      const newChecked = newState === 'on';
+ const toggleDevice = useCallback(
+  async (clientId, currentState, entity) => {
+    const newState = currentState === 'on' ? 'off' : 'on';
+    const newChecked = newState === 'on';
 
-      // ✅ Flip switch immediately
-      setLocalSwitchStates((prev) => ({
-        ...prev,
-        [clientId]: newChecked,
-      }));
+    // Optimistic UI update
+    setLocalSwitchStates((prev) => ({
+      ...prev,
+      [clientId]: newChecked,
+    }));
 
-      try {
-        await axiosInstance.post('/mqtt/toggle', {
-          clientId,
-          entity: entity || '',
-          state: newState,
-        });
+    try {
+      await axiosInstance.post('/mqtt/toggle', {
+        clientId,
+        entity: entity || '',
+        state: newState,
+      });
 
+      // Delayed consistency check
+      setTimeout(async () => {
         const mqttRes = await axiosInstance.post('/mqtt/data', {
           clientId,
           entity: entity || '',
         });
-        console.log(`[MQTT TOGGLE DATA] ${clientId}:`, mqttRes.data);
+
+        const actualPower = mqttRes.data.data?.status?.power;
+        const matchesExpected = actualPower === newState;
 
         if (isMounted.current) {
           setMqttDataList((prev) => ({
             ...prev,
             [clientId]: mqttRes.data.data || {},
           }));
-          setLocalSwitchStates((prev) => ({
-            ...prev,
-            [clientId]: mqttRes.data.data?.status?.power === 'on',
-          }));
-        }
-      } catch (error) {
-        console.error('Error toggling device:', error);
-      }
-    },
-    []
-  );
 
-  // FIXED: Use GET with query params for fetching automation rules
+          // Only update local switch state if backend disagrees
+          if (!matchesExpected) {
+            setLocalSwitchStates((prev) => ({
+              ...prev,
+              [clientId]: actualPower === 'on',
+            }));
+          }
+        }
+      }, 3000); // ⏳ increased to 3 seconds
+    } catch (error) {
+      console.error('Error toggling device:', error);
+    }
+  },
+  []
+);
+
+
   const openAutomationModal = useCallback(async (device) => {
     try {
       const res = await axiosInstance.get('/mqtt/getRule', {
@@ -135,7 +144,6 @@ const Home = () => {
     setAutomationDevice(device);
   }, []);
 
-  // FIXED: Use PUT /mqtt/update for update, POST /mqtt/automation for new rule
   const handleAutomationSubmit = useCallback(
     async (e) => {
       e.preventDefault();
