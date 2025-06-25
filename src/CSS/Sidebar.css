@@ -84,3 +84,11 @@
   font-weight: bold;
   border-radius: 12px;
 }
+.sidebar-list-item.active a {
+  font-weight: bold;
+  color: #3b82f6;
+  background-color: #e0f0ff;
+  border-radius: 4px;
+  padding: 4px 8px;
+  display: inline-block;
+}

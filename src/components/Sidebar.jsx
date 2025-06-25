@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { FaHome } from 'react-icons/fa';
 import { AiOutlineThunderbolt } from 'react-icons/ai';
 import { CgProfile } from 'react-icons/cg';
@@ -9,9 +9,9 @@ import '../CSS/Sidebar.css';
 function Sidebar() {
   const [showList, setShowList] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(window.innerWidth > 992);
+  const location = useLocation(); // 👈 Get current path
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
-
   const toggleList = () => setShowList(!showList);
   
   useEffect(() => {
@@ -72,16 +72,16 @@ function Sidebar() {
           )}
 
           <ul className="sidebar-list">
-            <li className="sidebar-list-item">
+            <li className={`sidebar-list-item ${location.pathname === '/' ? 'active' : ''}`}>
               <Link to="/"><FaHome className="icon" /> Нүүр</Link>
             </li>
-            <li className="sidebar-list-item">
+            <li className={`sidebar-list-item ${location.pathname.startsWith('/automation') ? 'active' : ''}`}>
               <Link to="/automation"><AiOutlineThunderbolt className="icon" /> Автоматжуулалт</Link>
             </li>
-            <li className="sidebar-list-item">
+            <li className={`sidebar-list-item ${location.pathname === '/profile' ? 'active' : ''}`}>
               <Link to="/profile"><CgProfile className="icon" /> Profile</Link>
             </li>
-            <li className='sidebar-list-item'>
+            <li className={`sidebar-list-item ${location.pathname === '/devices' ? 'active' : ''}`}>
               <Link to="/devices"><MdDevices className='icon' /> Devices</Link>
             </li>
           </ul>
