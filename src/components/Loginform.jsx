@@ -1,3 +1,4 @@
+// LoginForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../UserContext';
@@ -23,7 +24,7 @@ const LoginForm = () => {
     return () => document.body.classList.remove('login-background');
   }, []);
 
-const handleLogin = async (e) => {
+  const handleLogin = async (e) => {
   e.preventDefault();
   setError('');
 
@@ -33,9 +34,7 @@ const handleLogin = async (e) => {
   }
 
   try {
-    // 1️⃣ Login call
     const response = await axiosInstance.post('/users/login', { email, password });
-
     const accessToken = response.data.accessToken;
     const refreshToken = response.headers['x-refresh-token'];
 
@@ -43,17 +42,16 @@ const handleLogin = async (e) => {
       throw new Error('Tokens not returned from server');
     }
 
-    // 2️⃣ Get user info
     const userRes = await axiosInstance.get('/users/getuser', {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
+    console.log('🧐 [getuser] API response:', userRes.data);
 
-    const username = userRes.data.user?.name || 'User';
+    const usernameFromApi = userRes.data.user?.name || 'User';
+    console.log('👤 Logging in user:', usernameFromApi);
 
-    // 3️⃣ Save tokens + username in context
-    login(accessToken, refreshToken, username);
+    login(accessToken, refreshToken, usernameFromApi);
 
-    // 4️⃣ Redirect to home
     navigate('/');
   } catch (err) {
     console.error('Login error:', err);

@@ -1,3 +1,4 @@
+// Card.jsx
 import React from 'react';
 import { Switch } from 'antd';
 import '../CSS/Card.css';
@@ -28,7 +29,7 @@ function Card({
         </div>
         <h3 className="card-title">{title}</h3>
         <Switch
-          checked={isChecked}
+          checked={isChecked}           // controlled only by localSwitchStates
           onChange={onToggle}
           className="antd-switch"
           checkedChildren="ON"

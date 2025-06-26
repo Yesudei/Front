@@ -18,13 +18,17 @@ const Home = () => {
   const isMounted = useRef(true);
   const navigate = useNavigate();
 
+  // Fetch user's devices from /device/getUserDevice
   const fetchUserData = useCallback(async () => {
+    console.log('[DEBUG] fetchUserData started');
     try {
-      const data = await axiosInstance.get('/users/getuser');
-      if (isMounted.current) setUserData(data.data || data);
+      const { data } = await axiosInstance.get('/device/getUserDevice');
+      console.log('[DEBUG] User devices fetched:', data);
 
-      if (data.data?.user?.devices?.length > 0) {
-        const devices = data.data.user.devices;
+      if (isMounted.current) setUserData(data);
+
+      if (data?.devices?.length > 0) {
+        const devices = data.devices;
 
         const results = await Promise.all(
           devices.map(async (device) => {
@@ -33,14 +37,15 @@ const Home = () => {
                 clientId: device.clientId,
                 entity: device.entity || '',
               });
-              console.log(`[MQTT DATA] ${device.clientId}:`, mqttRes.data);
+              console.log(`[DEBUG] MQTT data for ${device.clientId}:`, mqttRes.data);
 
               return {
                 clientId: device.clientId,
                 mqttData: mqttRes.data,
                 device,
               };
-            } catch {
+            } catch (err) {
+              console.error(`[DEBUG] Failed fetching MQTT data for ${device.clientId}:`, err);
               return null;
             }
           })
@@ -52,9 +57,15 @@ const Home = () => {
           results.forEach((res) => {
             if (res) {
               dataMap[res.clientId] = res.mqttData.data || {};
-              switchMap[res.clientId] = res.mqttData.data?.status?.power === 'on';
+              const power = res.mqttData.data?.status?.power || '';
+              const powerOn = power.toLowerCase() === 'on'; // normalize here
+              switchMap[res.clientId] = powerOn;
+
+              console.log(`[DEBUG] Device ${res.clientId} power state:`, powerOn ? 'ON' : 'OFF');
+              console.log(`[DEBUG] Device ${res.clientId} mqttData:`, res.mqttData.data);
             }
           });
+          console.log('[DEBUG] Setting mqttDataList and localSwitchStates:', dataMap, switchMap);
           setMqttDataList(dataMap);
           setLocalSwitchStates(switchMap);
         }
@@ -63,63 +74,70 @@ const Home = () => {
         setLocalSwitchStates({});
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error('[DEBUG] Error fetching user devices:', error);
       logout();
       navigate('/login');
     }
   }, [logout, navigate]);
 
- const toggleDevice = useCallback(
-  async (clientId, currentState, entity) => {
-    const newState = currentState === 'on' ? 'off' : 'on';
-    const newChecked = newState === 'on';
+  // Toggle device power state
+  const toggleDevice = useCallback(
+    async (clientId, currentState, entity) => {
+      console.log(`[DEBUG] toggleDevice called for clientId=${clientId}, currentState=${currentState}, entity=${entity}`);
+      const normalizedState = currentState.toLowerCase();
+      const newState = normalizedState === 'on' ? 'off' : 'on';
+      const newChecked = newState === 'on';
 
-    // Optimistic UI update
-    setLocalSwitchStates((prev) => ({
-      ...prev,
-      [clientId]: newChecked,
-    }));
+      // Optimistic UI update
+      console.log(`[DEBUG] Optimistically setting localSwitchStates for ${clientId} to ${newChecked}`);
+      setLocalSwitchStates((prev) => ({
+        ...prev,
+        [clientId]: newChecked,
+      }));
 
-    try {
-      await axiosInstance.post('/mqtt/toggle', {
-        clientId,
-        entity: entity || '',
-        state: newState,
-      });
-
-      // Delayed consistency check
-      setTimeout(async () => {
-        const mqttRes = await axiosInstance.post('/mqtt/data', {
+      try {
+        console.log(`[DEBUG] Sending toggle POST to backend for ${clientId} with newState=${newState}`);
+        await axiosInstance.post('/mqtt/toggle', {
           clientId,
           entity: entity || '',
+          state: newState,
         });
 
-        const actualPower = mqttRes.data.data?.status?.power;
-        const matchesExpected = actualPower === newState;
+        // Delayed consistency check after 3 seconds
+        setTimeout(async () => {
+          console.log(`[DEBUG] Fetching MQTT data after toggle for ${clientId}`);
+          const mqttRes = await axiosInstance.post('/mqtt/data', {
+            clientId,
+            entity: entity || '',
+          });
+          console.log(`[DEBUG] Received MQTT data post-toggle for ${clientId}:`, mqttRes.data);
 
-        if (isMounted.current) {
-          setMqttDataList((prev) => ({
-            ...prev,
-            [clientId]: mqttRes.data.data || {},
-          }));
+          const actualPower = (mqttRes.data.data?.status?.power || '').toLowerCase();
 
-          // Only update local switch state if backend disagrees
-          if (!matchesExpected) {
+          if (isMounted.current) {
+            setMqttDataList((prev) => ({
+              ...prev,
+              [clientId]: mqttRes.data.data || {},
+            }));
+
             setLocalSwitchStates((prev) => ({
               ...prev,
               [clientId]: actualPower === 'on',
             }));
+
+            if (actualPower !== newState) {
+              console.log(`[DEBUG] Backend state mismatch for ${clientId}. UI synced to actual backend state: ${actualPower}`);
+            }
           }
-        }
-      }, 3000); // ⏳ increased to 3 seconds
-    } catch (error) {
-      console.error('Error toggling device:', error);
-    }
-  },
-  []
-);
+        }, 3000);
+      } catch (error) {
+        console.error('[DEBUG] Error toggling device:', error);
+      }
+    },
+    []
+  );
 
-
+  // Open automation modal and fetch existing rules if any
   const openAutomationModal = useCallback(async (device) => {
     try {
       const res = await axiosInstance.get('/mqtt/getRule', {
@@ -144,6 +162,7 @@ const Home = () => {
     setAutomationDevice(device);
   }, []);
 
+  // Handle automation save
   const handleAutomationSubmit = useCallback(
     async (e) => {
       e.preventDefault();
@@ -208,15 +227,17 @@ const Home = () => {
       <div className="main-content">
         <h1>User Devices & Latest MQTT Data</h1>
         {!userData && <p>Loading user data...</p>}
-        {userData && (!userData.user?.devices || userData.user.devices.length === 0) && (
+        {userData && (!userData.devices || userData.devices.length === 0) && (
           <p>No registered devices found</p>
         )}
         <div className="deviceGrid">
-          {userData?.user?.devices?.map((device) => {
+          {userData?.devices?.map((device) => {
             const deviceData = mqttDataList[device.clientId];
-            const powerState = deviceData?.status?.power ?? 'off';
+            const powerState = (deviceData?.status?.power || 'off').toLowerCase(); // normalize here too
             const temp = deviceData?.sensor?.data?.Temperature ?? 0;
             const status = getTempStatus(temp);
+
+            console.log(`[DEBUG] Rendering device ${device.clientId}: powerState=${powerState.toUpperCase()}, temp=${temp}, status=${status}`);
 
             return (
               <Card

@@ -1,101 +1,118 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import axiosInstance from './axiosInstance';  // <-- import your custom instance
+// src/UserContext.jsx
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import axiosInstance, { setAccessTokenForInterceptor } from './axiosInstance';
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
+  const [username, setUsernameState] = useState(() => {
+    const savedName = localStorage.getItem('username');
+    console.log('UserProvider init username from localStorage:', savedName);
+    return savedName || null;
+  });
+
   const [accessToken, setAccessTokenState] = useState(() => {
     const token = localStorage.getItem('accessToken');
     if (token) {
       axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setAccessTokenForInterceptor(token);
     }
     return token || null;
   });
 
   const [refreshToken, setRefreshTokenState] = useState(() => localStorage.getItem('refreshToken') || null);
-  const [username, setUsernameState] = useState(() => sessionStorage.getItem('username') || null);
-  const [userData, setUserData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const setUsername = useCallback((name) => {
+    console.log('💾 Setting username to:', name);
+    setUsernameState(name);
+    if (name) {
+      localStorage.setItem('username', name);
+    } else {
+      localStorage.removeItem('username');
+    }
+  }, []);
 
   const setAccessToken = useCallback((token) => {
+    console.log('🔄 setAccessToken called with:', token);
     setAccessTokenState(token);
     if (token) {
       localStorage.setItem('accessToken', token);
-      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;  // <-- use axiosInstance
+      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setAccessTokenForInterceptor(token);
     } else {
       localStorage.removeItem('accessToken');
-      delete axiosInstance.defaults.headers.common['Authorization'];  // <-- use axiosInstance
+      delete axiosInstance.defaults.headers.common['Authorization'];
+      setAccessTokenForInterceptor(null);
     }
   }, []);
 
   const setRefreshToken = useCallback((token) => {
+    console.log('🔄 setRefreshToken called with:', token);
     setRefreshTokenState(token);
-    if (token) localStorage.setItem('refreshToken', token);
-    else localStorage.removeItem('refreshToken');
-  }, []);
-
-  const setUsername = useCallback((name) => {
-    setUsernameState(name);
-    if (name) sessionStorage.setItem('username', name);
-    else sessionStorage.removeItem('username');
+    if (token) {
+      localStorage.setItem('refreshToken', token);
+    } else {
+      localStorage.removeItem('refreshToken');
+    }
   }, []);
 
   const login = useCallback((newAccessToken, newRefreshToken, name) => {
+    console.log('🔐 login() called:', newAccessToken, name);
     setAccessToken(newAccessToken);
     setRefreshToken(newRefreshToken);
     setUsername(name);
   }, [setAccessToken, setRefreshToken, setUsername]);
 
   const logout = useCallback(() => {
+    console.log('🔓 logout() called');
     setAccessToken(null);
     setRefreshToken(null);
     setUsername(null);
-    setUserData(null);
-    sessionStorage.clear();
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    setIsLoading(false);
+    localStorage.clear();
   }, [setAccessToken, setRefreshToken, setUsername]);
 
+  // Refresh token logic
   const refreshAccessToken = useCallback(async () => {
-    if (!refreshToken) {
-      logout();
-      return null;
-    }
-
     try {
-      const response = await axiosInstance.post(  // <-- use axiosInstance here as well
-        '/users/refresh',
-        {},
-        {
-          headers: { 'x-refresh-token': refreshToken },
-          withCredentials: true,
-        }
-      );
+      setIsLoading(true);
+      const response = await axiosInstance.post('/users/refresh', null, {
+        headers: {
+          'x-refresh-token': refreshToken,
+        },
+      });
 
-      const newAccessToken = response.data.accessToken;
-      if (!newAccessToken) throw new Error('No access token in response');
-
-      setAccessToken(newAccessToken);
-      return newAccessToken;
+      const newToken = response.data.accessToken;
+      if (newToken) {
+        setAccessToken(newToken);
+        setIsLoading(false);
+        return newToken;
+      } else {
+        logout();
+        setIsLoading(false);
+        return null;
+      }
     } catch (error) {
-      console.error('Token refresh failed:', error);
+      console.error('Refresh token failed:', error);
       logout();
+      setIsLoading(false);
       return null;
     }
-  }, [refreshToken, logout, setAccessToken]);
+  }, [refreshToken, setAccessToken, logout]);
 
   return (
     <UserContext.Provider
       value={{
+        username,
         accessToken,
         refreshToken,
-        username,
-        userData,
         login,
         logout,
-        refreshAccessToken,
         setAccessToken,
         setUsername,
-        setUserData,
+        isLoading,
+        refreshAccessToken,
       }}
     >
       {children}

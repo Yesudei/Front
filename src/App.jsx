@@ -1,7 +1,8 @@
+// src/App.jsx
 import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useUser, UserProvider } from './UserContext';
-import { setupInterceptors } from './axiosInstance';
+import axiosInstance, { setupInterceptors } from './axiosInstance';
 
 import Home from './components/Home';
 import LoginForm from './components/Loginform';
@@ -44,12 +45,10 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
-        {/* Nested routes render inside Layout */}
+        {/* Nested routes */}
         <Route index element={<Home />} />
         <Route path="profile" element={<Profile />} />
         <Route path="devices" element={<Devices />} />
-
-        {/* Automation inside layout */}
         <Route path="automation" element={<Automation />} />
         <Route path="automation/:clientId" element={<Automation />} />
       </Route>
