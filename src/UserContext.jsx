@@ -1,14 +1,23 @@
 // src/UserContext.jsx
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import axiosInstance, { setAccessTokenForInterceptor } from './axiosInstance';
+import { setupInterceptors } from './axiosInstance';
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [username, setUsernameState] = useState(() => {
-    const savedName = localStorage.getItem('username');
-    console.log('UserProvider init username from localStorage:', savedName);
-    return savedName || null;
+  // Store full user info including _id, username, etc.
+  const [user, setUserState] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        return JSON.parse(savedUser);
+      } catch {
+        localStorage.removeItem('user');
+        return null;
+      }
+    }
+    return null;
   });
 
   const [accessToken, setAccessTokenState] = useState(() => {
@@ -23,18 +32,30 @@ export const UserProvider = ({ children }) => {
   const [refreshToken, setRefreshTokenState] = useState(() => localStorage.getItem('refreshToken') || null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const setUsername = useCallback((name) => {
-    console.log('💾 Setting username to:', name);
-    setUsernameState(name);
-    if (name) {
-      localStorage.setItem('username', name);
+  // Keep username synced for convenience if you want, optional
+  const [username, setUsernameState] = useState(user?.username || null);
+
+  // Set user and sync to localStorage
+  const setUser = useCallback((userInfo) => {
+    if (userInfo) {
+      // Normalize userInfo to ensure username exists
+      const normalizedUser = {
+        ...userInfo,
+        username: userInfo.username || userInfo.name || null,
+      };
+      setUserState(normalizedUser);
+      setUsernameState(normalizedUser.username);
+      localStorage.setItem('user', JSON.stringify(normalizedUser));
+      localStorage.setItem('username', normalizedUser.username);
     } else {
+      setUserState(null);
+      setUsernameState(null);
+      localStorage.removeItem('user');
       localStorage.removeItem('username');
     }
   }, []);
 
   const setAccessToken = useCallback((token) => {
-    console.log('🔄 setAccessToken called with:', token);
     setAccessTokenState(token);
     if (token) {
       localStorage.setItem('accessToken', token);
@@ -48,7 +69,6 @@ export const UserProvider = ({ children }) => {
   }, []);
 
   const setRefreshToken = useCallback((token) => {
-    console.log('🔄 setRefreshToken called with:', token);
     setRefreshTokenState(token);
     if (token) {
       localStorage.setItem('refreshToken', token);
@@ -57,31 +77,25 @@ export const UserProvider = ({ children }) => {
     }
   }, []);
 
-  const login = useCallback((newAccessToken, newRefreshToken, name) => {
-    console.log('🔐 login() called:', newAccessToken, name);
+  // login accepts userInfo object with at least {_id, username}
+  const login = useCallback((newAccessToken, newRefreshToken, userInfo) => {
     setAccessToken(newAccessToken);
     setRefreshToken(newRefreshToken);
-    setUsername(name);
-  }, [setAccessToken, setRefreshToken, setUsername]);
+    setUser(userInfo);
+  }, [setAccessToken, setRefreshToken, setUser]);
 
   const logout = useCallback(() => {
-    console.log('🔓 logout() called');
     setAccessToken(null);
     setRefreshToken(null);
-    setUsername(null);
+    setUser(null);
     setIsLoading(false);
     localStorage.clear();
-  }, [setAccessToken, setRefreshToken, setUsername]);
+  }, [setAccessToken, setRefreshToken, setUser]);
 
-  // Refresh token logic
   const refreshAccessToken = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await axiosInstance.post('/users/refresh', null, {
-        headers: {
-          'x-refresh-token': refreshToken,
-        },
-      });
+      const response = await axiosInstance.post('/users/refresh', null); // cookie sent automatically
 
       const newToken = response.data.accessToken;
       if (newToken) {
@@ -99,18 +113,24 @@ export const UserProvider = ({ children }) => {
       setIsLoading(false);
       return null;
     }
-  }, [refreshToken, setAccessToken, logout]);
+  }, [setAccessToken, logout]);
+
+  useEffect(() => {
+    setupInterceptors({ refreshAccessToken, logout });
+  }, [refreshAccessToken, logout]);
 
   return (
     <UserContext.Provider
       value={{
+        user,
         username,
         accessToken,
         refreshToken,
         login,
         logout,
         setAccessToken,
-        setUsername,
+        setUser,
+        setUsername: setUsernameState,
         isLoading,
         refreshAccessToken,
       }}

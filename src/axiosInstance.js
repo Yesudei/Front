@@ -1,4 +1,3 @@
-// src/axiosInstance.js
 import axios from 'axios';
 
 const axiosInstance = axios.create({
@@ -6,17 +5,13 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-// We'll keep the current token here for requests
 let accessToken = null;
 
-// Function to update the access token used in interceptors
 export const setAccessTokenForInterceptor = (token) => {
   accessToken = token;
 };
 
-// Setup interceptors to attach token and handle 401 (refresh token)
 export const setupInterceptors = (user) => {
-  // Remove previous interceptors if any (optional, for avoiding duplicates)
   axiosInstance.interceptors.request.handlers = [];
   axiosInstance.interceptors.response.handlers = [];
 
@@ -29,7 +24,7 @@ export const setupInterceptors = (user) => {
     },
     (error) => Promise.reject(error)
   );
-
+  
   axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {

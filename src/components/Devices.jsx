@@ -4,38 +4,74 @@ import { useUser } from '../UserContext';
 import '../CSS/Devices.css';
 
 const Devices = () => {
-  const [allDevices, setAllDevices] = useState([]);
-  const { user } = useUser();
+  const [connectedDevices, setConnectedDevices] = useState([]);
+  const { accessToken, user } = useUser();
 
-  // Fetch all devices with registration and owner info
-  const fetchAllDevices = async () => {
+  const fetchConnectedDevices = async () => {
     try {
-      const response = await axiosInstance.get('/mqtt/getAllDevices');
-      const devices = response.data.devices || [];
-      setAllDevices(devices);
-      console.log('[DEBUG] All devices:', devices);
+      const res = await axiosInstance.get('/mqtt/getAllDevices');
+      console.log('🔥 [getAllDevices response]:', res.data);
+      if (res.data.success) {
+        setConnectedDevices(res.data.devices || []);
+      }
     } catch (err) {
-      console.error('Failed to fetch devices:', err);
+      console.error('Failed to fetch connected devices:', err);
     }
   };
 
-  // Register a device
+  useEffect(() => {
+    console.log('🧪 useEffect running:');
+    console.log('   accessToken:', accessToken);
+    console.log('   user:', user);
+    console.log('   user._id:', user?._id);
+
+    if (accessToken && user?._id) {
+      console.log('✅ Conditions met. Fetching devices...');
+      fetchConnectedDevices();
+    } else {
+      console.warn('❌ Missing accessToken or user._id, skipping fetchConnectedDevices');
+    }
+  }, [accessToken, user]);
+
   const registerDevice = async (device) => {
+    console.log('Registering device:', device.clientId, 'entities:', device.entities);
+
+    const entityToRegister =
+      Array.isArray(device.entities) &&
+      device.entities.length > 0 &&
+      typeof device.entities[0] === 'string' &&
+      device.entities[0].trim() !== ''
+        ? device.entities[0].trim()
+        : null;
+
+    if (!entityToRegister) {
+      alert(`Device ${device.clientId} cannot be registered: missing or invalid entity.`);
+      return;
+    }
+
     try {
-      await axiosInstance.post('/device/registerDevices', {
-        clientId: device.clientId,
-        entity: device.entities?.[0] || 'SI7021',
-        type: device.type || 'th',
-      });
+      await axiosInstance.post(
+        '/device/registerDevices',
+        {
+          clientId: device.clientId,
+          entity: entityToRegister,
+          type: device.type || 'th',
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       alert(`Device ${device.clientId} registered!`);
-      await fetchAllDevices();
+      await fetchConnectedDevices();
     } catch (err) {
       console.error('Registration failed:', err);
-      alert('Failed to register device.');
+      const errorMsg = err.response?.data?.message || 'Failed to register device.';
+      alert(errorMsg);
     }
   };
 
-  // Unregister a device
   const unregisterDevice = async (device) => {
     try {
       await axiosInstance.delete('/device/deleteDevice', {
@@ -43,38 +79,35 @@ const Devices = () => {
           clientId: device.clientId,
           entity: device.entities?.[0] || 'SI7021',
         },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
       alert(`Device ${device.clientId} unregistered!`);
-      await fetchAllDevices();
+      await fetchConnectedDevices();
     } catch (err) {
       console.error('Unregistration failed:', err);
       alert('Failed to unregister device.');
     }
   };
 
-  useEffect(() => {
-    if (user?._id) {
-      fetchAllDevices();
-    }
-  }, [user]);
-
-  // Split devices into categories based on registration and ownership
-  const registeredByUser = allDevices.filter(
-    (d) => d.registered && d.owner === user._id
+  // Fix: compare owner IDs as strings
+  const registeredByUser = connectedDevices.filter(
+    (d) => d.registered && d.owner && d.owner.toString() === user?._id
   );
 
-  const registeredByOthers = allDevices.filter(
-    (d) => d.registered && d.owner && d.owner !== user._id
+  const registeredByOthers = connectedDevices.filter(
+    (d) => d.registered && d.owner && d.owner.toString() !== user?._id
   );
 
-  const unregisteredDevices = allDevices.filter((d) => !d.registered);
+  const unregisteredDevices = connectedDevices.filter((d) => !d.registered);
 
   return (
     <div className="devices-page">
       <h1 className="devices-title">Devices</h1>
 
       <div className="devices-columns">
-        {/* Registered Devices Owned by User */}
+        {/* Registered Devices Owned by You */}
         <div className="device-column">
           <h2>Registered Devices (You Own)</h2>
           {registeredByUser.length === 0 ? (

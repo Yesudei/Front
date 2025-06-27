@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import axiosInstance, { setAccessTokenForInterceptor } from '../axiosInstance';
+import { useUser } from '../UserContext';
 import '../CSS/loginform.css';
 import AuthPage from './AuthPage';
 
@@ -15,8 +17,11 @@ const VerifyNumber = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const { login } = useUser();
+
+  // Clean phone number to digits only
   const rawPhone = location.state?.phoneNumber || '';
-  const phoneNumber = rawPhone.replace(/\D/g, ''); // always digits only
+  const phoneNumber = rawPhone.replace(/\D/g, '');
   const mode = location.state?.mode === 'reset' ? 'reset' : 'register';
 
   useEffect(() => {
@@ -36,26 +41,21 @@ const VerifyNumber = () => {
 
     const sendOtp = async () => {
       try {
-        const url = mode === 'reset'
-          ? 'http://localhost:3001/otp/forgot_pass'
-          : 'http://localhost:3001/otp/verify';
+        const url = mode === 'reset' ? '/otp/forgot_pass' : '/otp/verify';
 
-        const payload = mode === 'reset'
-          ? { phoneNumber: Number(phoneNumber) }
-          : { phoneNumber, authType: mode };
+        const payload =
+          mode === 'reset'
+            ? { phoneNumber: Number(phoneNumber) }
+            : { phoneNumber, authType: mode };
 
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Failed to send OTP');
+        const { data } = await axiosInstance.post(url, payload);
 
         setMessage('OTP sent successfully');
       } catch (err) {
-        setError('Error sending OTP: ' + err.message);
+        setError(
+          'Error sending OTP: ' +
+            (err.response?.data?.message || err.message || 'Unknown error')
+        );
       } finally {
         setSending(false);
       }
@@ -105,22 +105,22 @@ const VerifyNumber = () => {
     }
 
     try {
-      const url = mode === 'reset'
-        ? 'http://localhost:3001/otp/verify_reset/'
-        : 'http://localhost:3001/otp/verify';
+      const url = mode === 'reset' ? '/otp/verify_reset/' : '/otp/verify';
 
-      const payload = mode === 'reset'
-        ? { phoneNumber: Number(phoneNumber), code: finalOtp, authType: mode }
-        : { phoneNumber, code: finalOtp };
+      const payload =
+        mode === 'reset'
+          ? { phoneNumber: Number(phoneNumber), code: finalOtp, authType: mode }
+          : { phoneNumber, code: finalOtp };
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const { data } = await axiosInstance.post(url, payload);
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'OTP verification failed');
+      // If backend sends accessToken and user info on verify success:
+      if (data.accessToken) {
+        setAccessTokenForInterceptor(data.accessToken);
+        localStorage.setItem('accessToken', data.accessToken);
+        if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+        if (data.user) login(data.user);
+      }
 
       setMessage('OTP verified successfully!');
 
@@ -130,51 +130,60 @@ const VerifyNumber = () => {
         navigate('/login');
       }
     } catch (err) {
-      setError(err.message);
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          'OTP verification failed, please try again'
+      );
     }
   };
 
   return (
     <AuthPage>
-    <div className="wrapper">
-      <div className="form-header">
-        <h1>Enter OTP</h1>
-        <span
-          className="close-btn"
-          onClick={() => navigate('/login')}
-          role="button"
-          tabIndex={0}
-          aria-label="Close OTP Entry"
-        >
-          ×
-        </span>
-      </div>
+      <div className="wrapper">
+        <div className="form-header">
+          <h1>Enter OTP</h1>
+          <span
+            className="close-btn"
+            onClick={() => navigate('/login')}
+            role="button"
+            tabIndex={0}
+            aria-label="Close OTP Entry"
+          >
+            ×
+          </span>
+        </div>
 
-      {sending ? (
-        <p>Sending OTP to {phoneNumber}...</p>
-      ) : (
-        <form onSubmit={handleVerifyOtp}>
-          <div className="otp-input-container">
-            {otp.map((digit, index) => (
-              <input
-                key={index}
-                type="text"
-                maxLength="1"
-                className="otp-box"
-                value={digit}
-                ref={(el) => (inputRefs.current[index] = el)}
-                onChange={(e) => handleChange(e, index)}
-                onKeyDown={(e) => handleKeyDown(e, index)}
-              />
-            ))}
-          </div>
-          {error && <p className="error-message">{error}</p>}
-          {message && <p className="success-message">{message}</p>}
-          <button type="submit" className="login-btn">Verify OTP</button>
-        </form>
-      )}
+        {sending ? (
+          <p>Sending OTP to {phoneNumber}...</p>
+        ) : (
+          <form onSubmit={handleVerifyOtp}>
+            <div className="otp-input-container">
+              {otp.map((digit, index) => (
+                <input
+                  key={index}
+                  type="text"
+                  maxLength="1"
+                  className="otp-box"
+                  value={digit}
+                  ref={(el) => (inputRefs.current[index] = el)}
+                  onChange={(e) => handleChange(e, index)}
+                  onKeyDown={(e) => handleKeyDown(e, index)}
+                  autoComplete="one-time-code"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                />
+              ))}
+            </div>
+            {error && <p className="error-message">{error}</p>}
+            {message && <p className="success-message">{message}</p>}
+            <button type="submit" className="login-btn">
+              Verify OTP
+            </button>
+          </form>
+        )}
       </div>
-      </AuthPage>
+    </AuthPage>
   );
 };
 

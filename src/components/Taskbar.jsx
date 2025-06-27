@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { jwtDecode } from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 import '../CSS/Taskbar.css';
 import { useUser } from '../UserContext';
-import axiosInstance from '../axiosInstance';
+import axiosInstance, { setAccessTokenForInterceptor } from '../axiosInstance';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,6 +12,11 @@ const Taskbar = () => {
   const [weather, setWeather] = useState({ temp: null, condition: '', date: '' });
   const [logs, setLogs] = useState([]);
   const navigate = useNavigate();
+
+  // Sync axios interceptor with current accessToken
+  useEffect(() => {
+    setAccessTokenForInterceptor(accessToken);
+  }, [accessToken]);
 
   const fetchUserAndLogs = useCallback(async () => {
     try {
@@ -25,12 +30,12 @@ const Taskbar = () => {
         setUsername('User');
       }
 
-      // Get user info (optional)
+      // Get user info
       const userRes = await axiosInstance.get('/users/getuser');
       const userId = userRes.data.user?.id || userRes.data.user?._id;
       if (!userId) return;
 
-      // Get all connected devices (or devices owned by user)
+      // Get devices
       const devicesRes = await axiosInstance.get('/mqtt/getAllDevices');
       const devices = devicesRes.data.devices || [];
 
@@ -39,12 +44,11 @@ const Taskbar = () => {
         return;
       }
 
-      // Pick first device and entity
       const firstDevice = devices[0];
       const clientId = firstDevice.clientId;
-      const entity = firstDevice.entity || 'SI7021'; // Replace with real entity if possible
+      const entity = firstDevice.entity || 'SI7021';
 
-      // Fetch power logs
+      // Fetch logs
       const logsRes = await axiosInstance.get('/mqtt/powerlogs');
       const rawLogs = logsRes.data;
       const logsArray = Array.isArray(rawLogs?.logs) ? rawLogs.logs : [];
@@ -71,7 +75,7 @@ const Taskbar = () => {
 
     const interval = setInterval(() => {
       fetchUserAndLogs();
-    }, 30000); // refresh logs every 30 seconds
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [accessToken, fetchUserAndLogs]);

@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../CSS/loginform.css';
 import axiosInstance from '../axiosInstance';
-import AuthPage from './AuthPage';
+import '../CSS/loginform.css';
 
 const RegisterForm = () => {
   const navigate = useNavigate();
+
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -22,7 +21,7 @@ const RegisterForm = () => {
     e.preventDefault();
     setError('');
 
-    if (!name || !email || !password || !confirmPassword || !phoneNumber) {
+    if (!name || !phoneNumber || !password || !confirmPassword) {
       setError('Please fill in all fields');
       return;
     }
@@ -35,25 +34,23 @@ const RegisterForm = () => {
     try {
       const response = await axiosInstance.post('/users/register', {
         name,
-        email,
         phoneNumber,
         password,
       });
 
-      // optional: check response
-      if (response.status !== 201 && response.status !== 200) {
-        throw new Error(response.data?.message || 'Registration failed');
+      if (response.status === 201 || response.status === 200) {
+        // Assuming you verify phone number next
+        navigate('/verify-number', { state: { phoneNumber } });
+      } else {
+        setError(response.data.message || 'Registration failed');
       }
-
-      navigate('/verify-number', { state: { phoneNumber } });
     } catch (err) {
       console.error('Registration error:', err);
-      setError(err.response?.data?.message || err.message);
+      setError(err.response?.data?.message || err.message || 'Registration failed');
     }
   };
 
   return (
-    <AuthPage>
     <div className="wrapper">
       <div className="form-header">
         <h1>Register</h1>
@@ -68,6 +65,7 @@ const RegisterForm = () => {
           ×
         </span>
       </div>
+
       <form onSubmit={handleRegister}>
         <div className="input-box">
           <label htmlFor="name">Name</label>
@@ -79,26 +77,18 @@ const RegisterForm = () => {
             onChange={(e) => setName(e.target.value)}
           />
         </div>
+
         <div className="input-box">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="phoneNumber">Phone Number</label>
           <input
-            id="email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div className="input-box">
-          <label htmlFor="number">Enter phone number</label>
-          <input
-            id="number"
+            id="phoneNumber"
             type="tel"
             required
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
           />
         </div>
+
         <div className="input-box">
           <label htmlFor="password">Password</label>
           <input
@@ -109,6 +99,7 @@ const RegisterForm = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
+
         <div className="input-box">
           <label htmlFor="confirmPassword">Confirm Password</label>
           <input
@@ -140,8 +131,7 @@ const RegisterForm = () => {
           </p>
         </div>
       </form>
-      </div>
-  </AuthPage>
+    </div>
   );
 };
 

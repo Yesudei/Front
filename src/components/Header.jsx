@@ -1,9 +1,10 @@
+// Header.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../UserContext';
 import viotLogo from '../assets/viot.png';
 import DarkModeToggle from './DarkModeToggle';
-import '../CSS/Header.css'; // Make sure you have styles defined for header, dropdown, etc.
+import '../CSS/Header.css';
 
 function Header() {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -11,10 +12,10 @@ function Header() {
   const buttonRef = useRef(null);
   const navigate = useNavigate();
 
-  const { username, logout, isLoading } = useUser();
+  const { user, logout, isLoading } = useUser();
 
-  // 🪵 Confirm context reactivity
-  console.log('[Header] Rendered with username:', username);
+  // Determine displayName: try user.username, then user.name, else 'User'
+  const displayName = user?.username || user?.name || 'User';
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -67,7 +68,7 @@ function Header() {
             aria-expanded={showDropdown}
             onClick={() => setShowDropdown((prev) => !prev)}
           >
-            {username?.trim() || 'User'}
+            {displayName}
           </button>
 
           {showDropdown && (

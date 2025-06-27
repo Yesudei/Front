@@ -1,4 +1,3 @@
-// LoginForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../UserContext';
@@ -9,7 +8,7 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const { login, accessToken, username } = useUser();
 
-  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
@@ -25,39 +24,53 @@ const LoginForm = () => {
   }, []);
 
   const handleLogin = async (e) => {
-  e.preventDefault();
-  setError('');
+    e.preventDefault();
+    setError('');
 
-  if (!email || !password) {
-    setError('Please enter both email and password');
-    return;
-  }
-
-  try {
-    const response = await axiosInstance.post('/users/login', { email, password });
-    const accessToken = response.data.accessToken;
-    const refreshToken = response.headers['x-refresh-token'];
-
-    if (!accessToken || !refreshToken) {
-      throw new Error('Tokens not returned from server');
+    if (!phoneNumber || !password) {
+      setError('Please enter both phone number and password');
+      return;
     }
 
-    const userRes = await axiosInstance.get('/users/getuser', {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    });
-    console.log('🧐 [getuser] API response:', userRes.data);
+    try {
+      const response = await axiosInstance.post('/users/login', {
+        phoneNumber,
+        password,
+      });
 
-    const usernameFromApi = userRes.data.user?.name || 'User';
-    console.log('👤 Logging in user:', usernameFromApi);
+      const accessToken = response.data.accessToken;
+      const refreshToken = response.headers['x-refresh-token'];
 
-    login(accessToken, refreshToken, usernameFromApi);
+      if (!accessToken || !refreshToken) {
+        throw new Error('Tokens not returned from server');
+      }
 
-    navigate('/');
-  } catch (err) {
-    console.error('Login error:', err);
-    setError(err.response?.data?.message || err.message || 'Login failed');
-  }
-};
+      // Fetch full user info here
+      const userRes = await axiosInstance.get('/users/getuser', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      console.log('User API response:', userRes.data);
+
+      const userFromApi = userRes.data.user;
+
+      if (!userFromApi || !userFromApi.id) {
+        throw new Error('User data incomplete');
+      }
+
+      // Normalize user object to have _id property
+      const normalizedUser = {
+        ...userFromApi,
+        _id: userFromApi.id,
+      };
+
+      login(accessToken, refreshToken, normalizedUser);
+
+      navigate('/');
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err.response?.data?.message || err.message || 'Login failed');
+    }
+  };
 
   return (
     <div className="login-page">
@@ -75,13 +88,13 @@ const LoginForm = () => {
         </div>
         <form onSubmit={handleLogin}>
           <div className="input-box">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="phoneNumber">Phone Number</label>
             <input
-              id="email"
-              type="email"
+              id="phoneNumber"
+              type="text"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
             />
           </div>
           <div className="input-box">
