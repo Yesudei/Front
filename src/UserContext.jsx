@@ -30,7 +30,7 @@ export const UserProvider = ({ children }) => {
   });
 
   const [refreshToken, setRefreshTokenState] = useState(() => localStorage.getItem('refreshToken') || null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // start as loading=true
 
   // Keep username synced for convenience if you want, optional
   const [username, setUsernameState] = useState(user?.username || null);
@@ -42,6 +42,7 @@ export const UserProvider = ({ children }) => {
       const normalizedUser = {
         ...userInfo,
         username: userInfo.username || userInfo.name || null,
+        isAdmin: userInfo.isAdmin || false,
       };
       setUserState(normalizedUser);
       setUsernameState(normalizedUser.username);
@@ -114,6 +115,18 @@ export const UserProvider = ({ children }) => {
       return null;
     }
   }, [setAccessToken, logout]);
+
+  // IMPORTANT: Trigger refreshAccessToken once on mount if no token yet
+  useEffect(() => {
+    const initAuth = async () => {
+      if (!accessToken) {
+        await refreshAccessToken();
+      } else {
+        setIsLoading(false); // already have token, done loading
+      }
+    };
+    initAuth();
+  }, [accessToken, refreshAccessToken]);
 
   useEffect(() => {
     setupInterceptors({ refreshAccessToken, logout });

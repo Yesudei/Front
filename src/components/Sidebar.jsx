@@ -3,17 +3,20 @@ import { Link, useLocation } from 'react-router-dom';
 import { FaHome } from 'react-icons/fa';
 import { AiOutlineThunderbolt } from 'react-icons/ai';
 import { CgProfile } from 'react-icons/cg';
-import { MdDevices } from "react-icons/md";
+import { MdDevices, MdAdminPanelSettings } from 'react-icons/md'; // ✅ Added this line
+import { RiShieldUserLine } from 'react-icons/ri';
 import '../CSS/Sidebar.css';
+import { useUser } from '../UserContext';
 
 function Sidebar() {
   const [showList, setShowList] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(window.innerWidth > 992);
-  const location = useLocation(); // 👈 Get current path
+  const location = useLocation();
+  const { user } = useUser();
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
   const toggleList = () => setShowList(!showList);
-  
+
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 992) {
@@ -25,6 +28,7 @@ function Sidebar() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+console.log("[DEBUG] Sidebar user:", user);
 
   return (
     <>
@@ -84,6 +88,11 @@ function Sidebar() {
             <li className={`sidebar-list-item ${location.pathname === '/devices' ? 'active' : ''}`}>
               <Link to="/devices"><MdDevices className='icon' /> Devices</Link>
             </li>
+            {user?.isAdmin && (
+              <li className={`sidebar-list-item ${location.pathname === '/admin' ? 'active' : ''}`}>
+                <Link to="/admin"><MdAdminPanelSettings className='icon' /> Admin Panel</Link>
+              </li>
+            )}
           </ul>
         </nav>
       )}

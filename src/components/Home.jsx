@@ -18,9 +18,7 @@ const Home = () => {
   const isMounted = useRef(true);
   const navigate = useNavigate();
 
-  // Fetch user's devices from /device/getUserDevice
   const fetchUserData = useCallback(async () => {
-    console.log('[DEBUG] fetchUserData started');
     try {
       const { data } = await axiosInstance.get('/device/getUserDevice');
       console.log('[DEBUG] User devices fetched:', data);
@@ -37,7 +35,6 @@ const Home = () => {
                 clientId: device.clientId,
                 entity: device.entity || '',
               });
-              console.log(`[DEBUG] MQTT data for ${device.clientId}:`, mqttRes.data);
 
               return {
                 clientId: device.clientId,
@@ -45,7 +42,6 @@ const Home = () => {
                 device,
               };
             } catch (err) {
-              console.error(`[DEBUG] Failed fetching MQTT data for ${device.clientId}:`, err);
               return null;
             }
           })
@@ -58,14 +54,10 @@ const Home = () => {
             if (res) {
               dataMap[res.clientId] = res.mqttData.data || {};
               const power = res.mqttData.data?.status?.power || '';
-              const powerOn = power.toLowerCase() === 'on'; // normalize here
+              const powerOn = power.toLowerCase() === 'on';
               switchMap[res.clientId] = powerOn;
-
-              console.log(`[DEBUG] Device ${res.clientId} power state:`, powerOn ? 'ON' : 'OFF');
-              console.log(`[DEBUG] Device ${res.clientId} mqttData:`, res.mqttData.data);
             }
           });
-          console.log('[DEBUG] Setting mqttDataList and localSwitchStates:', dataMap, switchMap);
           setMqttDataList(dataMap);
           setLocalSwitchStates(switchMap);
         }
@@ -74,43 +66,34 @@ const Home = () => {
         setLocalSwitchStates({});
       }
     } catch (error) {
-      console.error('[DEBUG] Error fetching user devices:', error);
       logout();
       navigate('/login');
     }
   }, [logout, navigate]);
 
-  // Toggle device power state
   const toggleDevice = useCallback(
     async (clientId, currentState, entity) => {
-      console.log(`[DEBUG] toggleDevice called for clientId=${clientId}, currentState=${currentState}, entity=${entity}`);
       const normalizedState = currentState.toLowerCase();
       const newState = normalizedState === 'on' ? 'off' : 'on';
       const newChecked = newState === 'on';
 
-      // Optimistic UI update
-      console.log(`[DEBUG] Optimistically setting localSwitchStates for ${clientId} to ${newChecked}`);
       setLocalSwitchStates((prev) => ({
         ...prev,
         [clientId]: newChecked,
       }));
 
       try {
-        console.log(`[DEBUG] Sending toggle POST to backend for ${clientId} with newState=${newState}`);
         await axiosInstance.post('/mqtt/toggle', {
           clientId,
           entity: entity || '',
           state: newState,
         });
 
-        // Delayed consistency check after 3 seconds
         setTimeout(async () => {
-          console.log(`[DEBUG] Fetching MQTT data after toggle for ${clientId}`);
           const mqttRes = await axiosInstance.post('/mqtt/data', {
             clientId,
             entity: entity || '',
           });
-          console.log(`[DEBUG] Received MQTT data post-toggle for ${clientId}:`, mqttRes.data);
 
           const actualPower = (mqttRes.data.data?.status?.power || '').toLowerCase();
 
@@ -124,20 +107,15 @@ const Home = () => {
               ...prev,
               [clientId]: actualPower === 'on',
             }));
-
-            if (actualPower !== newState) {
-              console.log(`[DEBUG] Backend state mismatch for ${clientId}. UI synced to actual backend state: ${actualPower}`);
-            }
           }
         }, 3000);
       } catch (error) {
-        console.error('[DEBUG] Error toggling device:', error);
+        console.error('Error toggling device:', error);
       }
     },
     []
   );
 
-  // Open automation modal and fetch existing rules if any
   const openAutomationModal = useCallback(async (device) => {
     try {
       const res = await axiosInstance.get('/mqtt/getRule', {
@@ -162,7 +140,6 @@ const Home = () => {
     setAutomationDevice(device);
   }, []);
 
-  // Handle automation save
   const handleAutomationSubmit = useCallback(
     async (e) => {
       e.preventDefault();
@@ -207,6 +184,15 @@ const Home = () => {
   useEffect(() => {
     const loadSessionAndUser = async () => {
       await fetchUserData();
+
+      // 🔍 Log /getuser result here
+      try {
+        const res = await axiosInstance.get('users/getuser');
+        console.log('[DEBUG] /getuser response:', res.data);
+      } catch (err) {
+        console.error('[ERROR] Failed to fetch /getuser:', err);
+      }
+
       setLoadingSession(false);
     };
     loadSessionAndUser();
@@ -233,7 +219,7 @@ const Home = () => {
         <div className="deviceGrid">
           {userData?.devices?.map((device) => {
             const deviceData = mqttDataList[device.clientId];
-            const powerState = (deviceData?.status?.power || 'off').toLowerCase(); // normalize here too
+            const powerState = (deviceData?.status?.power || 'off').toLowerCase();
             const temp = deviceData?.sensor?.data?.Temperature ?? 0;
             const status = getTempStatus(temp);
 

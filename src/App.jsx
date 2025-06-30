@@ -7,6 +7,8 @@ import axiosInstance, { setupInterceptors } from './axiosInstance';
 import Home from './components/Home';
 import LoginForm from './components/Loginform';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/Admin/AdminPanel';
+import AdminPanel from './components/Admin/AdminPanel';
 import Layout from './components/layout';
 import Register from './components/Register';
 import VerifyNumber from './components/Verifynumber';
@@ -51,6 +53,16 @@ const AppRoutes = () => {
         <Route path="devices" element={<Devices />} />
         <Route path="automation" element={<Automation />} />
         <Route path="automation/:clientId" element={<Automation />} />
+
+        {/* Admin-only route */}
+        <Route
+          path="admin"
+          element={
+            <AdminRoute>
+              <AdminPanel />
+            </AdminRoute>
+          }
+        />
       </Route>
     </Routes>
   );
