@@ -1,12 +1,11 @@
 // src/UserContext.jsx
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import axiosInstance, { setAccessTokenForInterceptor } from './axiosInstance';
-import { setupInterceptors } from './axiosInstance';
+import axiosInstance, { setAccessTokenForInterceptor, setupInterceptors } from './axiosInstance';
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  // Store full user info including _id, username, etc.
+  // User info state
   const [user, setUserState] = useState(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
@@ -20,6 +19,7 @@ export const UserProvider = ({ children }) => {
     return null;
   });
 
+  // Access token state
   const [accessToken, setAccessTokenState] = useState(() => {
     const token = localStorage.getItem('accessToken');
     if (token) {
@@ -29,16 +29,19 @@ export const UserProvider = ({ children }) => {
     return token || null;
   });
 
+  // Refresh token state (optional, for localStorage sync)
   const [refreshToken, setRefreshTokenState] = useState(() => localStorage.getItem('refreshToken') || null);
-  const [isLoading, setIsLoading] = useState(true); // start as loading=true
 
-  // Keep username synced for convenience if you want, optional
+  // Loading and refreshing flags
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Optional username synced from user
   const [username, setUsernameState] = useState(user?.username || null);
 
-  // Set user and sync to localStorage
+  // Helper to set user and sync localStorage
   const setUser = useCallback((userInfo) => {
     if (userInfo) {
-      // Normalize userInfo to ensure username exists
       const normalizedUser = {
         ...userInfo,
         username: userInfo.username || userInfo.name || null,
@@ -56,6 +59,7 @@ export const UserProvider = ({ children }) => {
     }
   }, []);
 
+  // Set access token and sync localStorage and axios interceptor
   const setAccessToken = useCallback((token) => {
     setAccessTokenState(token);
     if (token) {
@@ -69,6 +73,7 @@ export const UserProvider = ({ children }) => {
     }
   }, []);
 
+  // Set refresh token in localStorage
   const setRefreshToken = useCallback((token) => {
     setRefreshTokenState(token);
     if (token) {
@@ -78,56 +83,83 @@ export const UserProvider = ({ children }) => {
     }
   }, []);
 
-  // login accepts userInfo object with at least {_id, username}
+  // Login function to set tokens and user info
   const login = useCallback((newAccessToken, newRefreshToken, userInfo) => {
     setAccessToken(newAccessToken);
     setRefreshToken(newRefreshToken);
     setUser(userInfo);
   }, [setAccessToken, setRefreshToken, setUser]);
 
+  // Logout function clears all
   const logout = useCallback(() => {
     setAccessToken(null);
     setRefreshToken(null);
     setUser(null);
     setIsLoading(false);
+    setIsRefreshing(false);
     localStorage.clear();
   }, [setAccessToken, setRefreshToken, setUser]);
 
+  // Refresh token function - send refresh token via header, no cookies
   const refreshAccessToken = useCallback(async () => {
+    if (isRefreshing) {
+      return null;
+    }
     try {
-      setIsLoading(true);
-      const response = await axiosInstance.post('/users/refresh', null); // cookie sent automatically
+      setIsRefreshing(true);
+
+      const storedRefreshToken = localStorage.getItem('refreshToken');
+      if (!storedRefreshToken) {
+        logout();
+        setIsRefreshing(false);
+        setIsLoading(false);
+        return null;
+      }
+
+      const response = await axiosInstance.post(
+        '/users/refresh',
+        null,
+        {
+          headers: {
+            'x-refresh-token': storedRefreshToken,
+          },
+        }
+      );
 
       const newToken = response.data.accessToken;
       if (newToken) {
         setAccessToken(newToken);
+        setIsRefreshing(false);
         setIsLoading(false);
         return newToken;
       } else {
         logout();
+        setIsRefreshing(false);
         setIsLoading(false);
         return null;
       }
     } catch (error) {
-      console.error('Refresh token failed:', error);
+      console.error('[REFRESH ERROR]', error);
       logout();
+      setIsRefreshing(false);
       setIsLoading(false);
       return null;
     }
-  }, [setAccessToken, logout]);
+  }, [isRefreshing, logout, setAccessToken]);
 
-  // IMPORTANT: Trigger refreshAccessToken once on mount if no token yet
+  // Initial auth effect runs once: refresh token if no access token
   useEffect(() => {
     const initAuth = async () => {
       if (!accessToken) {
         await refreshAccessToken();
       } else {
-        setIsLoading(false); // already have token, done loading
+        setIsLoading(false);
       }
     };
     initAuth();
   }, [accessToken, refreshAccessToken]);
 
+  // Setup axios interceptors with refresh and logout handlers
   useEffect(() => {
     setupInterceptors({ refreshAccessToken, logout });
   }, [refreshAccessToken, logout]);

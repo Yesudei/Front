@@ -20,7 +20,7 @@ const Home = () => {
 
   const fetchUserData = useCallback(async () => {
     try {
-      const { data } = await axiosInstance.get('/device/getUserDevice');
+      const { data } = await axiosInstance.get('/device/getDevices');
       console.log('[DEBUG] User devices fetched:', data);
 
       if (isMounted.current) setUserData(data);

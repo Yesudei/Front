@@ -9,7 +9,6 @@ const Devices = () => {
 
   const fetchConnectedDevices = async () => {
     try {
-      const res = await axiosInstance.get('/mqtt/getAllDevices');
       console.log('🔥 [getAllDevices response]:', res.data);
       if (res.data.success) {
         setConnectedDevices(res.data.devices || []);
