@@ -28,15 +28,18 @@ function ShareAccessForm({ deviceId }) {
     try {
       setLoading(true);
 
-      const response = await axiosInstance.get('/users/addUserToDevice', {
-        params: {
+      const response = await axiosInstance.post(
+        '/device/addUserToDevice', // POST endpoint for your backend
+        {
           id: deviceId,
           phoneNumber,
         },
-        headers: {
-          Authorization: `Bearer ${accessToken}`, // manually add token header
-        },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`, // send token in header
+          },
+        }
+      );
 
       if (response.data.success) {
         setStatusMessage('Device shared successfully');
