@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import axiosInstance from '../../axiosInstance';
 import { useUser } from '../../UserContext';
 
-function ShareAccessForm({ deviceId }) {
+function ShareAccessForm({ deviceId, onShareSuccess }) {
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [name, setName] = useState('');
   const [statusMessage, setStatusMessage] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { accessToken } = useUser(); // get token from context
+  const { accessToken } = useUser();
 
   const handleShare = async (e) => {
     e.preventDefault();
@@ -14,6 +15,10 @@ function ShareAccessForm({ deviceId }) {
 
     if (!phoneNumber) {
       setStatusMessage('Please enter a phone number');
+      return;
+    }
+    if (!name) {
+      setStatusMessage('Please enter a name');
       return;
     }
     if (!deviceId) {
@@ -25,11 +30,6 @@ function ShareAccessForm({ deviceId }) {
       return;
     }
 
-    console.log('🔑 accessToken:', accessToken);
-    console.log('📱 phoneNumber:', phoneNumber);
-    console.log('📦 deviceId:', deviceId);
-    console.log('📤 Sending request to /device/addUserToDevice');
-
     try {
       setLoading(true);
 
@@ -37,7 +37,8 @@ function ShareAccessForm({ deviceId }) {
         '/device/addUserToDevice',
         {
           id: deviceId,
-          phoneNumber: phoneNumber.trim(), // trim any extra spaces
+          phoneNumber: phoneNumber.trim(),
+          name: name.trim(),
         },
         {
           headers: {
@@ -46,21 +47,17 @@ function ShareAccessForm({ deviceId }) {
         }
       );
 
-      console.log('✅ Response:', response.data);
-
       if (response.data.success) {
         setStatusMessage('✅ Device shared successfully');
         setPhoneNumber('');
+        setName('');
+        if (onShareSuccess) {
+          onShareSuccess();
+        }
       } else {
-        console.warn('⚠️ Backend failed:', response.data);
         setStatusMessage(response.data.message || '❌ Failed to share device');
       }
     } catch (error) {
-      console.error('❌ Share device error:', error);
-      if (error.response) {
-        console.error('📥 Response data:', error.response.data);
-        console.error('📥 Status:', error.response.status);
-      }
       setStatusMessage('❌ Error sharing device');
     } finally {
       setLoading(false);
@@ -75,8 +72,16 @@ function ShareAccessForm({ deviceId }) {
         placeholder="User's phone number"
         value={phoneNumber}
         onChange={(e) => setPhoneNumber(e.target.value)}
+        style={{ width: '100%', marginBottom: '8px', padding: '6px' }}
       />
-      <button type="submit" disabled={loading}>
+      <input
+        type="text"
+        placeholder="Custom name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        style={{ width: '100%', marginBottom: '8px', padding: '6px' }}
+      />
+      <button type="submit" disabled={loading} style={{ padding: '8px 12px' }}>
         {loading ? 'Sharing...' : 'Share Access'}
       </button>
       {statusMessage && <p>{statusMessage}</p>}

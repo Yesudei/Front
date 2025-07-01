@@ -1,14 +1,17 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import axiosInstance, { setAccessTokenForInterceptor, setupInterceptors } from './axiosInstance';
 
-// Define normalizeUser function at the top levels
+// Normalize user and include phoneNumber with debug log
 const normalizeUser = (userInfo) => {
   if (!userInfo) return null;
-  return {
+  const normalized = {
     ...userInfo,
     username: userInfo.username || userInfo.name || null,
-    isAdmin: userInfo.isAdmin === true || userInfo.isAdmin === 'true' // Convert to boolean
+    phoneNumber: userInfo.phoneNumber || null, // Add phoneNumber here
+    isAdmin: userInfo.isAdmin === true || userInfo.isAdmin === 'true',
   };
+  console.log('normalizeUser:', normalized);
+  return normalized;
 };
 
 const UserContext = createContext();
@@ -19,8 +22,11 @@ export const UserProvider = ({ children }) => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
-        return normalizeUser(JSON.parse(savedUser));
-      } catch {
+        const parsedUser = JSON.parse(savedUser);
+        const normalizedUser = normalizeUser(parsedUser);
+        console.log('Loaded user from localStorage:', normalizedUser);
+        return normalizedUser;
+      } catch (e) {
         localStorage.removeItem('user');
         return null;
       }
@@ -28,7 +34,6 @@ export const UserProvider = ({ children }) => {
     return null;
   });
 
-  // Access token states
   const [accessToken, setAccessTokenState] = useState(() => {
     const token = localStorage.getItem('accessToken');
     return token || null;
@@ -41,6 +46,8 @@ export const UserProvider = ({ children }) => {
 
   const setUser = useCallback((userInfo) => {
     const normalizedUser = normalizeUser(userInfo);
+    console.log('setUser called with:', userInfo);
+    console.log('Normalized user:', normalizedUser);
     if (normalizedUser) {
       setUserState(normalizedUser);
       setUsernameState(normalizedUser.username);
@@ -58,10 +65,12 @@ export const UserProvider = ({ children }) => {
       localStorage.setItem('accessToken', token);
       axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setAccessTokenForInterceptor(token);
+      console.log('Access token set:', token);
     } else {
       localStorage.removeItem('accessToken');
       delete axiosInstance.defaults.headers.common['Authorization'];
       setAccessTokenForInterceptor(null);
+      console.log('Access token removed');
     }
   }, []);
 
@@ -86,34 +95,46 @@ export const UserProvider = ({ children }) => {
     setUser(null);
     setIsLoading(false);
     setIsRefreshing(false);
+    console.log('User logged out');
   }, [setAccessToken, setRefreshToken, setUser]);
 
   const refreshAccessToken = useCallback(async () => {
     if (isRefreshing) return null;
-    
+
     try {
       setIsRefreshing(true);
       const storedRefreshToken = localStorage.getItem('refreshToken');
       if (!storedRefreshToken) {
+        console.log('No refresh token found during refresh. Logging out.');
         logout();
         return null;
       }
 
       const response = await axiosInstance.post('/users/refresh', null, {
-        headers: { 'x-refresh-token': storedRefreshToken }
+        headers: { 'x-refresh-token': storedRefreshToken },
       });
 
       const newToken = response.data.accessToken;
+      console.log('Token refreshed:', newToken);
+
       if (newToken) {
         setAccessToken(newToken);
-        const userResponse = await axiosInstance.get('/users/profile');
-        setUser(userResponse.data);
+
+        // Fetch updated user data from /users/getuser
+        const userResponse = await axiosInstance.get('/users/getuser');
+        console.log('User data fetched after token refresh:', userResponse.data);
+
+        // IMPORTANT: pass userResponse.data.user, NOT userResponse.data
+        setUser(userResponse.data.user);
+
         return newToken;
       } else {
+        console.log('No access token in refresh response. Logging out.');
         logout();
         return null;
       }
     } catch (error) {
+      console.error('Error refreshing token or fetching user:', error);
       logout();
       return null;
     } finally {
@@ -151,7 +172,7 @@ export const UserProvider = ({ children }) => {
         login,
         logout,
         isLoading,
-        refreshAccessToken
+        refreshAccessToken,
       }}
     >
       {children}

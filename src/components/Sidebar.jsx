@@ -3,8 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { FaHome } from 'react-icons/fa';
 import { AiOutlineThunderbolt } from 'react-icons/ai';
 import { CgProfile } from 'react-icons/cg';
-import { MdDevices, MdAdminPanelSettings } from 'react-icons/md'; // ✅ Added this line
-import { RiShieldUserLine } from 'react-icons/ri';
+import { MdDevices, MdAdminPanelSettings } from 'react-icons/md';
 import '../CSS/Sidebar.css';
 import { useUser } from '../UserContext';
 
@@ -28,7 +27,6 @@ function Sidebar() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-console.log("[DEBUG] Sidebar user:", user);
 
   return (
     <>
@@ -85,11 +83,17 @@ console.log("[DEBUG] Sidebar user:", user);
             <li className={`sidebar-list-item ${location.pathname === '/profile' ? 'active' : ''}`}>
               <Link to="/profile"><CgProfile className="icon" /> Profile</Link>
             </li>
-            <li className={`sidebar-list-item ${location.pathname === '/devices' ? 'active' : ''}`}>
-              <Link to="/devices"><MdDevices className='icon' /> Devices</Link>
-            </li>
+
+            {/* Show Devices only for non-admin users */}
+            {!user?.isAdmin && (
+              <li className={`sidebar-list-item ${location.pathname === '/devices' ? 'active' : ''}`}>
+                <Link to="/devices"><MdDevices className='icon' /> Devices</Link>
+              </li>
+            )}
+
+            {/* Show Admin Panel only for admin users */}
             {user?.isAdmin && (
-              <li className={`sidebar-list-item ${location.pathname === '/admin' ? 'active' : ''}`}>
+              <li className={`sidebar-list-item ${location.pathname.startsWith('/admin') ? 'active' : ''}`}>
                 <Link to="/admin"><MdAdminPanelSettings className='icon' /> Admin Panel</Link>
               </li>
             )}

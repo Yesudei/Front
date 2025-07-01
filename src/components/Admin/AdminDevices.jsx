@@ -1,24 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../axiosInstance';
-import { useUser } from '../../UserContext'; // import your user context hook
+import { useUser } from '../../UserContext';
+import ShareAccessForm from './ShareAccessForm'; // import ShareAccessForm component
 
 const AdminDevices = () => {
-  const { user, isLoading } = useUser(); // get user and loading status from context
+  const { user, isLoading, accessToken } = useUser();
 
   const [devices, setDevices] = useState([]);
   const [loadingDevices, setLoadingDevices] = useState(true);
+
   const [sharedUsers, setSharedUsers] = useState([]);
   const [loadingSharedUsers, setLoadingSharedUsers] = useState(false);
+
   const [selectedDeviceId, setSelectedDeviceId] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
   const [error, setError] = useState(null);
   const [sharedUsersError, setSharedUsersError] = useState(null);
+
+  const [removingUserPhone, setRemovingUserPhone] = useState(null);
 
   useEffect(() => {
     if (!isLoading && user?.isAdmin) {
       fetchAdminDevices();
     } else if (!isLoading && !user?.isAdmin) {
-      setLoadingDevices(false); // stop loading if user is not admin
+      setLoadingDevices(false);
     }
   }, [user, isLoading]);
 
@@ -62,11 +68,44 @@ const AdminDevices = () => {
     }
   };
 
+  const handleRemoveUser = async (phoneNumber) => {
+    if (!selectedDeviceId) return;
+    setRemovingUserPhone(phoneNumber);
+    setSharedUsersError(null);
+
+    try {
+      const response = await axiosInstance.post(
+        '/device/removeUserFromDevice',
+        { id: selectedDeviceId, phoneNumber }, // changed deviceId to id to match backend expected body param
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      if (response.data.success) {
+        setSharedUsers((prev) => prev.filter((user) => user.phoneNumber !== phoneNumber));
+      } else {
+        setSharedUsersError(response.data.message || 'Failed to remove user.');
+      }
+    } catch (error) {
+      console.error('Error removing user:', error);
+      setSharedUsersError('Error removing user.');
+    } finally {
+      setRemovingUserPhone(null);
+    }
+  };
+
+  // Refresh shared users list after successfully sharing access
+  const handleShareSuccess = async () => {
+    if (selectedDeviceId) {
+      await fetchSharedUsers(selectedDeviceId);
+    }
+  };
+
   const closeModal = () => {
     setShowModal(false);
     setSharedUsers([]);
     setSelectedDeviceId(null);
     setSharedUsersError(null);
+    setRemovingUserPhone(null);
   };
 
   const styles = {
@@ -89,6 +128,15 @@ const AdminDevices = () => {
       marginTop: '10px',
       padding: '6px 12px',
       background: '#007bff',
+      color: 'white',
+      border: 'none',
+      borderRadius: '6px',
+      cursor: 'pointer',
+    },
+    removeButton: {
+      marginLeft: '10px',
+      padding: '4px 10px',
+      background: '#dc3545',
       color: 'white',
       border: 'none',
       borderRadius: '6px',
@@ -156,9 +204,12 @@ const AdminDevices = () => {
           {devices.map((device) => (
             <li key={device._id} style={styles.card}>
               <div>
-                <strong>Client ID:</strong> {device.clientId}<br />
-                <strong>Type:</strong> {device.type}<br />
-                <strong>Status:</strong> {device.status}<br />
+                <strong>Client ID:</strong> {device.clientId}
+                <br />
+                <strong>Type:</strong> {device.type}
+                <br />
+                <strong>Status:</strong> {device.status}
+                <br />
               </div>
               <button
                 style={styles.button}
@@ -178,18 +229,34 @@ const AdminDevices = () => {
         <div style={styles.modalOverlay} onClick={closeModal}>
           <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <h3>Shared Users for Device ID: {selectedDeviceId}</h3>
+
             {sharedUsers.length === 0 ? (
               <p>No users have access to this device.</p>
             ) : (
               <ul>
                 {sharedUsers.map((user, index) => (
-                  <li key={index}>
+                  <li key={index} style={{ marginBottom: '8px' }}>
                     {user.name} ({user.phoneNumber})
+                    <button
+                      style={styles.removeButton}
+                      disabled={removingUserPhone === user.phoneNumber}
+                      onClick={() => handleRemoveUser(user.phoneNumber)}
+                    >
+                      {removingUserPhone === user.phoneNumber ? 'Removing...' : 'Remove'}
+                    </button>
                   </li>
                 ))}
               </ul>
             )}
+
             {sharedUsersError && <p style={styles.errorText}>{sharedUsersError}</p>}
+
+            {/* Add ShareAccessForm here */}
+            <ShareAccessForm
+              deviceId={selectedDeviceId}
+              onShareSuccess={handleShareSuccess} // pass callback to refresh shared users list
+            />
+
             <button style={styles.closeButton} onClick={closeModal}>
               Close
             </button>

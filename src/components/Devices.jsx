@@ -1,93 +1,147 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axiosInstance from '../axiosInstance';
 import { useUser } from '../UserContext';
 import '../CSS/Devices.css';
 
 const Devices = () => {
-  const { accessToken, user } = useUser();
   const [connectedDevices, setConnectedDevices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { accessToken, user } = useUser();
+  const [loadingRemove, setLoadingRemove] = useState(null);
 
-  // Fetch devices on load
-  useEffect(() => {
-    const fetchDevices = async () => {
-      try {
-        const res = await axiosInstance.get('/device/getDevices', {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-
-        // Use res.data.devices if the response is in that format
-        console.log('[DEBUG] Full device response:', res.data);
-        setConnectedDevices(res.data.devices);
-      } catch (err) {
-        console.error('Failed to fetch devices:', err);
-        setError('Failed to load devices');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDevices();
-  }, [accessToken]);
-
-  const handleRemoveDevice = async (clientId) => {
+  const fetchConnectedDevices = async () => {
     try {
-      const res = await axiosInstance.post(
-        '/device/removeUserFromDevice',
-        { clientId },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      console.log('[INFO] Removed:', res.data);
-      setConnectedDevices((prev) =>
-        prev.filter((device) => device.clientId !== clientId)
-      );
+      const res = await axiosInstance.get('/device/getDevices', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (res.data.success) {
+        const normalizedDevices = (res.data.devices || []).map(device => ({
+          ...device,
+          _id:
+            typeof device._id === 'object' && device._id.$oid
+              ? device._id.$oid
+              : device._id,
+        }));
+        setConnectedDevices(normalizedDevices);
+      }
     } catch (err) {
-      console.error('Failed to remove device:', err);
-      setError('Could not remove device');
+      console.error('Failed to fetch connected devices:', err);
     }
   };
 
-  // Filter devices where user is owner or addedBy
-  const accessibleDevices = connectedDevices.filter((device) => {
-    const uid = user?._id || user?.id;
-    return device.owner === uid || device.addedBy === uid;
+  useEffect(() => {
+    if (accessToken && user?._id) {
+      fetchConnectedDevices();
+    }
+  }, [accessToken, user]);
+
+  const accessibleDevices = connectedDevices.filter(device => {
+    if (!device.owner || device.owner.length === 0) return false;
+    const userIdStr = user._id.toString();
+    return device.owner.some(ownerObj => {
+      const ownerUserId = ownerObj.userId;
+      let ownerUserIdStr = '';
+      if (
+        typeof ownerUserId === 'object' &&
+        ownerUserId !== null &&
+        '$oid' in ownerUserId
+      ) {
+        ownerUserIdStr = ownerUserId.$oid;
+      } else if (typeof ownerUserId === 'string') {
+        ownerUserIdStr = ownerUserId;
+      }
+      return ownerUserIdStr === userIdStr;
+    });
   });
 
+  const handleRemove = async deviceId => {
+    if (
+      !window.confirm(
+        'Are you sure you want to remove this device from your list?'
+      )
+    )
+      return;
+
+    setLoadingRemove(deviceId);
+
+    try {
+      const ownersResponse = await axiosInstance.post(
+        '/device/getOwners',
+        { deviceId },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+
+      if (!ownersResponse.data.success) {
+        alert('Failed to get device owners');
+        setLoadingRemove(null);
+        return;
+      }
+
+      const allOwners = ownersResponse.data.owners || [];
+
+      const userPhoneFound = allOwners.some(
+        owner => owner.phoneNumber === user.phoneNumber
+      );
+
+      if (!userPhoneFound) {
+        alert('Your phone number is not associated with this device.');
+        setLoadingRemove(null);
+        return;
+      }
+
+      const removeResponse = await axiosInstance.post(
+        '/device/removeUserFromDevice',
+        {
+          id: deviceId,
+          phoneNumber: user.phoneNumber,
+        },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+
+      if (removeResponse.data.success) {
+        fetchConnectedDevices();
+      } else {
+        alert(removeResponse.data.message || 'Failed to remove device.');
+      }
+    } catch (err) {
+      console.error('Error removing device:', err.response?.data || err.message);
+      alert('Error removing device. Please try again.');
+    } finally {
+      setLoadingRemove(null);
+    }
+  };
+
   return (
-    <div className="devices-container">
-      <h2>Your Devices</h2>
-      {loading ? (
-        <p>Loading devices...</p>
-      ) : error ? (
-        <p className="error">{error}</p>
-      ) : accessibleDevices.length === 0 ? (
-        <p>No accessible devices found.</p>
-      ) : (
-        <div className="device-list">
-          {accessibleDevices.map((device) => (
-            <div className="device-card" key={device.clientId}>
-              <h3>{device.clientId}</h3>
-              <p>Type: {device.type || 'Unknown'}</p>
-              <p>Owner: {device.owner}</p>
-              {((device.owner === user?._id) || (device.addedBy === user?._id)) && (
-                <button
-                  className="remove-btn"
-                  onClick={() => handleRemoveDevice(device.clientId)}
-                >
-                  Remove Device
-                </button>
-              )}
-            </div>
-          ))}
+    <div className="devices-page">
+      <h1 className="devices-title">My Devices</h1>
+
+      <div className="devices-columns">
+        <div className="device-column">
+          {accessibleDevices.length === 0 ? (
+            <p>No devices shared with you.</p>
+          ) : (
+            <ul className="device-list">
+              {accessibleDevices.map(device => (
+                <li key={device._id} className="device-item">
+                  <div>
+                    <strong>{device.clientId || device._id}</strong> —{' '}
+                    {device.entity || 'Unknown Entity'}
+                  </div>
+                  <button
+                    onClick={() => handleRemove(device._id)}
+                    disabled={loadingRemove === device._id}
+                  >
+                    {loadingRemove === device._id ? 'Removing...' : 'Remove Device'}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
