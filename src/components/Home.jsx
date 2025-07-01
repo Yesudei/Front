@@ -21,7 +21,6 @@ const Home = () => {
   const fetchUserData = useCallback(async () => {
     try {
       const { data } = await axiosInstance.get('/device/getDevices');
-      console.log('[DEBUG] User devices fetched:', data);
 
       if (isMounted.current) setUserData(data);
 
@@ -188,9 +187,7 @@ const Home = () => {
       // 🔍 Log /getuser result here
       try {
         const res = await axiosInstance.get('users/getuser');
-        console.log('[DEBUG] /getuser response:', res.data);
       } catch (err) {
-        console.error('[ERROR] Failed to fetch /getuser:', err);
       }
 
       setLoadingSession(false);
@@ -222,8 +219,6 @@ const Home = () => {
             const powerState = (deviceData?.status?.power || 'off').toLowerCase();
             const temp = deviceData?.sensor?.data?.Temperature ?? 0;
             const status = getTempStatus(temp);
-
-            console.log(`[DEBUG] Rendering device ${device.clientId}: powerState=${powerState.toUpperCase()}, temp=${temp}, status=${status}`);
 
             return (
               <Card

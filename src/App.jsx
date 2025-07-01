@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useUser, UserProvider } from './UserContext';
@@ -7,8 +6,9 @@ import axiosInstance, { setupInterceptors } from './axiosInstance';
 import Home from './components/Home';
 import LoginForm from './components/Loginform';
 import ProtectedRoute from './components/ProtectedRoute';
-import AdminRoute from './components/Admin/AdminPanel';
+import AdminRoute from './components/Admin/AdminRoute'; // your auth wrapper
 import AdminPanel from './components/Admin/AdminPanel';
+import AdminDevices from './components/Admin/AdminDevices';
 import Layout from './components/layout';
 import Register from './components/Register';
 import VerifyNumber from './components/Verifynumber';
@@ -54,7 +54,7 @@ const AppRoutes = () => {
         <Route path="automation" element={<Automation />} />
         <Route path="automation/:clientId" element={<Automation />} />
 
-        {/* Admin-only route */}
+        {/* Admin-only route subtree */}
         <Route
           path="admin"
           element={
@@ -62,7 +62,10 @@ const AppRoutes = () => {
               <AdminPanel />
             </AdminRoute>
           }
-        />
+        >
+          {/* Nested admin routes */}
+          <Route path="devices" element={<AdminDevices />} />
+        </Route>
       </Route>
     </Routes>
   );
