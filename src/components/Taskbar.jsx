@@ -36,7 +36,7 @@ const Taskbar = () => {
       if (!userId) return;
 
       // Get devices
-      const devicesRes = await axiosInstance.get('/mqtt/getAllDevices');
+      const devicesRes = await axiosInstance.get('/device/getDevices');
       const devices = devicesRes.data.devices || [];
 
       if (devices.length === 0) {

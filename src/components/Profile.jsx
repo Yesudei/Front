@@ -7,8 +7,11 @@ import { useUser } from '../UserContext';
 const Profile = () => {
   const { logout, accessToken } = useUser();
   const [user, setUser] = useState(null);
-  const [error, setError] = useState('');
+  const [editedName, setEditedName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const navigate = useNavigate();
 
@@ -18,6 +21,7 @@ const Profile = () => {
         setLoading(true);
         const res = await axiosInstance.get('/users/getuser');
         setUser(res.data.user);
+        setEditedName(res.data.user.name || '');
       } catch (err) {
         setError('Failed to load profile');
         console.error(err);
@@ -38,16 +42,38 @@ const Profile = () => {
     navigate('/login');
   };
 
-  if (loading) {
-    return <div className="wrapper"><p>Loading profile...</p></div>;
+const handleUpdate = async () => {
+  if (!editedName.trim()) {
+    setError('Name cannot be empty.');
+    return;
   }
 
-  if (error) {
-    return (
-      <div className="wrapper">
-        <p className="error-message">{error}</p>
-      </div>
+  try {
+    setUpdating(true);
+    setError('');
+    setSuccess('');
+    const res = await axiosInstance.post(
+      '/users/updateUsername',
+      { newName: editedName },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, 
+        },
+      }
     );
+    setUser(prev => ({ ...prev, name: editedName }));
+    setSuccess('Name updated successfully!');
+  } catch (err) {
+    console.error(err);
+    setError('Failed to update name');
+  } finally {
+    setUpdating(false);
+  }
+};
+
+
+  if (loading) {
+    return <div className="wrapper"><p>Loading profile...</p></div>;
   }
 
   return (
@@ -63,25 +89,48 @@ const Profile = () => {
         </button>
       </div>
 
+      {error && <p className="error-message">{error}</p>}
+      {success && <p className="success-message">{success}</p>}
+
       {user ? (
-        <div className="profile-info">
-          <div className="input-box">
-            <label>Name</label>
-            <input type="text" value={user.name || ''} readOnly />
-          </div>
-          <div className="input-box">
-            <label>Email</label>
-            <input type="email" value={user.email || ''} readOnly />
-          </div>
-          <div className="input-box">
-            <label>Phone Number</label>
-            <input type="tel" value={user.phoneNumber || ''} readOnly />
+        <>
+          <div className="avatar">
+            {user.name?.[0]?.toUpperCase() || "?"}
           </div>
 
-          <button className="login-btn" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
+          <div className="profile-info">
+            <div className="input-box">
+              <label>Name</label>
+              <input
+                type="text"
+                value={editedName}
+                onChange={(e) => setEditedName(e.target.value)}
+                disabled={updating}
+              />
+            </div>
+
+            <div className="input-box">
+              <label>Phone Number</label>
+              <input
+                type="tel"
+                value={user.phoneNumber || ''}
+                readOnly
+              />
+            </div>
+
+            <button
+              className="login-btn"
+              onClick={handleUpdate}
+              disabled={updating}
+            >
+              {updating ? 'Saving...' : 'Save Changes'}
+            </button>
+
+            <button className="logout-btn" onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
+        </>
       ) : (
         <p>No user data found.</p>
       )}
