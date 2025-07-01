@@ -6,9 +6,9 @@ import axiosInstance, { setupInterceptors } from './axiosInstance';
 import Home from './components/Home';
 import LoginForm from './components/Loginform';
 import ProtectedRoute from './components/ProtectedRoute';
-import AdminRoute from './components/Admin/AdminRoute'; // your auth wrapper
+import AdminRoute from './components/Admin/AdminRoute';
 import AdminPanel from './components/Admin/AdminPanel';
-import AdminDevices from './components/Admin/AdminDevices';
+// import AdminDevices from './components/Admin/AdminDevices'; ❌ removed
 import Layout from './components/layout';
 import Register from './components/Register';
 import VerifyNumber from './components/Verifynumber';
@@ -63,8 +63,7 @@ const AppRoutes = () => {
             </AdminRoute>
           }
         >
-          {/* Nested admin routes */}
-          <Route path="devices" element={<AdminDevices />} />
+          {/* No nested devices route here anymore */}
         </Route>
       </Route>
     </Routes>

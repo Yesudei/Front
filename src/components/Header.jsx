@@ -1,4 +1,3 @@
-// Header.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../UserContext';
@@ -14,7 +13,6 @@ function Header() {
 
   const { user, logout, isLoading } = useUser();
 
-  // Determine displayName: try user.username, then user.name, else 'User'
   const displayName = user?.username || user?.name || 'User';
 
   useEffect(() => {
@@ -49,7 +47,7 @@ function Header() {
     navigate('/login');
   };
 
-  if (isLoading) return null; // prevent flickering
+  if (isLoading) return null;
 
   return (
     <header className="header">
@@ -58,8 +56,6 @@ function Header() {
       </div>
 
       <div className="header-right">
-        <DarkModeToggle />
-
         <div className="user-menu">
           <button
             ref={buttonRef}
@@ -71,18 +67,19 @@ function Header() {
             {displayName}
           </button>
 
-          {showDropdown && (
-            <ul
-              className="user-dropdown"
-              ref={dropdownRef}
-              role="menu"
-              aria-label="User menu"
-            >
-              <li role="menuitem" onClick={handleLogout}>
-                Logout
-              </li>
-            </ul>
-          )}
+          <ul
+            className={`user-dropdown ${showDropdown ? 'show' : ''}`}
+            ref={dropdownRef}
+            role="menu"
+            aria-label="User menu"
+          >
+            <li role="menuitem" onClick={handleLogout}>
+              Logout
+            </li>
+            <li role="menuitem">
+              <DarkModeToggle />
+            </li>
+          </ul>
         </div>
       </div>
     </header>

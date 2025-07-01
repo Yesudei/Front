@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import axiosInstance from '../../axiosInstance';
 import ShareAccessForm from './ShareAccessForm';
+import '../../CSS/AdminPanel.css';
 
 function AdminPanel() {
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showSharedWith, setShowSharedWith] = useState({});
-
-  const navigate = useNavigate();
+  const [showAllSharedDevices, setShowAllSharedDevices] = useState(false);
 
   const fetchDevices = async () => {
     setLoading(true);
@@ -42,44 +42,49 @@ function AdminPanel() {
   };
 
   return (
-    <div style={{ padding: '1rem' }}>
+    <div className="admin-panel">
       <h1>Admin Panel</h1>
 
       {loading && <p>Loading devices...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
-
       {!loading && !error && devices.length === 0 && <p>No devices found.</p>}
 
-      {/* Button to navigate to AdminDevices page */}
       <button
-        onClick={() => navigate('devices')}
-        style={{
-          marginBottom: '20px',
-          padding: '8px 16px',
-          cursor: 'pointer',
-          backgroundColor: '#007bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-        }}
+        className="button-primary"
+        onClick={() => setShowAllSharedDevices((prev) => !prev)}
       >
-        View Shared Devices
+        {showAllSharedDevices ? 'Hide Shared Devices' : 'View Shared Devices'}
       </button>
 
-      <ul style={{ listStyle: 'none', padding: 0 }}>
+      {showAllSharedDevices && (
+        <div className="shared-section">
+          <h2>Devices Shared With Other Users</h2>
+          {devices.filter((d) => d.sharedWith?.length > 0).length === 0 ? (
+            <p>No devices are shared with users.</p>
+          ) : (
+            <ul className="device-list">
+              {devices
+                .filter((device) => device.sharedWith?.length > 0)
+                .map((device) => (
+                  <li key={device._id || device.id} className="device-card">
+                    <h3>Device ID: {device._id || device.id}</h3>
+                    <p>Type: {device.type || 'Unknown'}</p>
+                    <p>
+                      <strong>Shared With:</strong> {device.sharedWith.join(', ')}
+                    </p>
+                  </li>
+                ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      <ul className="device-list">
         {devices.map((device) => {
           const deviceId = device._id || device.id;
 
           return (
-            <li
-              key={deviceId}
-              style={{
-                border: '1px solid #ccc',
-                padding: '1rem',
-                marginBottom: '1rem',
-                borderRadius: '6px',
-              }}
-            >
+            <li key={deviceId} className="device-card">
               <h3>Device ID: {deviceId}</h3>
               <p>Type: {device.type || 'Unknown'}</p>
               <p>
@@ -90,21 +95,14 @@ function AdminPanel() {
               </p>
 
               <button
+                className="toggle-button"
                 onClick={() => toggleShowSharedWith(deviceId)}
-                style={{ marginBottom: '10px', cursor: 'pointer' }}
               >
                 {showSharedWith[deviceId] ? 'Hide Shared Users' : 'Show Shared Users'}
               </button>
 
               {showSharedWith[deviceId] && (
-                <div
-                  style={{
-                    backgroundColor: '#f9f9f9',
-                    padding: '10px',
-                    borderRadius: '4px',
-                    marginBottom: '10px',
-                  }}
-                >
+                <div className="shared-users">
                   <strong>Shared With:</strong>{' '}
                   {Array.isArray(device.sharedWith) && device.sharedWith.length > 0
                     ? device.sharedWith.join(', ')
@@ -118,7 +116,6 @@ function AdminPanel() {
         })}
       </ul>
 
-      {/* Render nested admin routes here (e.g. AdminDevices) */}
       <Outlet />
     </div>
   );

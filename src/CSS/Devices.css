@@ -1,37 +1,46 @@
 .devices-page {
-  padding: 2rem;
-  background-color: #f9f9f9;
+  padding: 30px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
 }
 
 .devices-title {
   text-align: center;
-  font-size: 2rem;
-  margin-bottom: 2rem;
-  font-weight: 600;
+  font-size: 32px;
+  margin-bottom: 40px;
+  font-weight: 300;
+  color: #2c3e50;
 }
 
 .devices-columns {
   display: flex;
-  gap: 2rem;
+  gap: 25px;
   flex-wrap: wrap;
   justify-content: space-between;
 }
 
 .device-column {
   flex: 1;
-  min-width: 300px;
-  background: #fff;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  min-width: 350px;
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.device-column:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
 
 .device-column h2 {
-  font-size: 1.4rem;
-  margin-bottom: 1rem;
-  color: #222;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 0.5rem;
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #2c3e50;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 10px;
+  font-weight: 600;
 }
 
 .device-list {
@@ -44,29 +53,39 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  margin-bottom: 1rem;
-  border-radius: 6px;
-  background: #f9f9f9;
+  padding: 20px;
+  border: 2px solid #f1f3f4;
+  margin-bottom: 15px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  transition: all 0.3s ease;
+}
+
+.device-item:hover {
+  border-color: #3498db;
+  background: white;
+  transform: translateX(5px);
+  box-shadow: 0 5px 20px rgba(52, 152, 219, 0.1);
 }
 
 .device-item button {
-  background-color: #3b82f6;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
   border: none;
   color: white;
-  padding: 0.4rem 1rem;
-  font-size: 1rem;
-  border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 25px;
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
 }
 
 .device-item button:hover {
-  background-color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
 }
 
-/* Optional: better mobile responsiveness */
 @media (max-width: 768px) {
   .devices-columns {
     flex-direction: column;
@@ -74,5 +93,6 @@
 
   .device-column {
     width: 100%;
+    min-width: auto;
   }
 }

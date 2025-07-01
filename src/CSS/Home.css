@@ -1,133 +1,147 @@
-/* Home.css */
 
 .container {
   width: 100%;
   height: 100%;
   overflow-y: auto;
-  padding: 2rem;
+  padding: 0;
   box-sizing: border-box;
 }
 
 .deviceGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 300px));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 25px;
   margin-top: 20px;
 }
 
-.automationOverlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-/* Background overlay */
 .automationOverlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.55);
+  background: rgba(15, 23, 42, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 10000;
+  backdrop-filter: blur(8px);
 }
 
-/* Centered modal box */
 .automationModal {
-  background-color: #ffffff;
-  color: #333;
-  padding: 24px 32px;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  color: #334155;
+  padding: 32px;
+  border-radius: 24px;
+  box-shadow: 0 25px 50px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(148, 163, 184, 0.1);
   width: 90%;
-  max-width: 500px;
+  max-width: 520px;
   position: relative;
-  z-index: 1001;
+  z-index: 10001;
+  animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .automationModal h2 {
   margin-top: 0;
-  font-size: 22px;
-  margin-bottom: 16px;
+  font-size: 24px;
+  margin-bottom: 24px;
+  color: #1e293b;
+  font-weight: 600;
+  background: linear-gradient(135deg, #3b82fe 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .automationModal label {
   display: block;
   margin-bottom: 8px;
-  font-weight: bold;
+  font-weight: 500;
+  color: #475569;
+  font-size: 14px;
 }
 
 .automationModal input[type="time"] {
   width: 100%;
-  padding: 8px 4px;
+  padding: 14px 18px;
   font-size: 16px;
-  margin-bottom: 16px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background-color: #f9f9f9;
+  margin-bottom: 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  background: #f8fafc;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  color: #334155;
 }
 
-/* Button layout */
+.automationModal input[type="time"]:focus {
+  outline: none;
+  border-color: #3b82fe;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+}
+
 .automationModal button {
-  margin-right: 2px;
-  margin-top: 2px;
-  padding: 8px 14px;
+  margin-right: 12px;
+  margin-top: 12px;
+  padding: 14px 24px;
   font-size: 14px;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 16px;
   border: none;
-  background-color: #1890ff;
+  background: linear-gradient(135deg, #3b82fe 0%, #1d4ed8 100%);
   color: white;
-  transition: background-color 0.2s ease;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25);
 }
 
 .automationModal button:hover {
-  background-color: #40a9ff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.35);
 }
 
-/* Cancel button style */
 .automationModal button[type="button"]:not(.viewTimersBtn) {
-  background-color: #f5222d;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.25);
 }
 
 .automationModal button[type="button"]:not(.viewTimersBtn):hover {
-  background-color: #ff4d4f;
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.35);
 }
 
-/* View All Timers button */
 .viewTimersBtn {
-  background-color: #52c41a !important;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.25) !important;
 }
 
 .viewTimersBtn:hover {
-  background-color: #73d13d !important;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.35) !important;
 }
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
 
 .statusText {
-  margin-left: 1rem;
-  margin-top: 10px;
+  margin-left: 0;
+  margin-top: 16px;
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
 }
 
 .sensorData {
-  margin-top: 10px;
-  margin-left: 1rem;
+  margin-top: 16px;
+  margin-left: 0;
+  font-size: 14px;
+  color: #475569;
+  font-weight: 500;
 }

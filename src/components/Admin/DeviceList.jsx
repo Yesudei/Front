@@ -1,25 +1,47 @@
 import React from 'react';
+import '../../CSS/AdminPanel.css';
 
-function DeviceList({ devices, onSelectDevice, selectedDeviceId }) {
-  if (!devices.length) return <p>No devices found.</p>;
-
+function DeviceList({ devices, onShare, onUnshare, isAdminView, onRemoveSelf }) {
   return (
-    <ul>
-      {devices.map(device => (
-        <li
-          key={device.id || device._id}
-          style={{
-            cursor: 'pointer',
-            fontWeight: device.id === selectedDeviceId ? 'bold' : 'normal',
-            padding: '5px',
-            borderBottom: '1px solid #ccc',
-          }}
-          onClick={() => onSelectDevice(device.id || device._id)}
-        >
-          {device.clientId || device.name || device._id}
-        </li>
+    <div className="device-list">
+      {devices.map((device) => (
+        <div className="device-card" key={device.clientId}>
+          <h3 className="device-id">ID: {device.clientId}</h3>
+          <p className="device-type">Төрөл: {device.type}</p>
+          <p className="device-status">
+            Бүртгэлтэй эсэх: {device.registered ? 'Тийм' : 'Үгүй'}
+          </p>
+
+          <div className="device-actions">
+            {isAdminView ? (
+              <>
+                <button
+                  className="button-primary"
+                  onClick={() => onShare(device.clientId)}
+                >
+                  Хуваалцах
+                </button>
+                {onUnshare && (
+                  <button
+                    className="button-secondary"
+                    onClick={() => onUnshare(device.clientId)}
+                  >
+                    Хуваалцах эрх цуцлах
+                  </button>
+                )}
+              </>
+            ) : (
+              <button
+                className="button-danger"
+                onClick={() => onRemoveSelf(device.clientId)}
+              >
+                Энэ төхөөрөмжөөс гарах
+              </button>
+            )}
+          </div>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 }
 

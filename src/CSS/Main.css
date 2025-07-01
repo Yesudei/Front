@@ -1,26 +1,37 @@
+/* ===== MAIN.CSS ===== */
 .main-container {
   grid-area: main;
   height: 100%;
   overflow-y: auto;
-  padding: 40px 42px;
-  background-color: #eee;
+  padding: 30px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   box-sizing: border-box;
+  position: relative;
 }
 
 .main-title {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 30px;
+  align-items: center;
 }
-/* In App.css or Main.css */
+
+.main-title h1 {
+  font-size: 32px;
+  color: #2c3e50;
+  font-weight: 300;
+  margin: 0;
+}
 
 .grid-container {
   display: grid;
   grid-template-areas:
     "header header header"
     "sidebar main taskbar";
-  grid-template-columns: 240px 1fr 300px;  /* sidebar | main | taskbar */
-  grid-template-rows: auto 1fr;            /* header | rest */
+  grid-template-columns: 280px 1fr 320px;
+  grid-template-rows: auto 1fr;
   height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .header {
@@ -33,12 +44,12 @@
 
 .main-container {
   grid-area: main;
-  padding: 1rem;
+  padding: 30px;
   overflow-y: auto;
 }
 
 .taskbar-container {
   grid-area: taskbar;
-  padding: 1rem;
+  padding: 20px;
   overflow-y: auto;
 }

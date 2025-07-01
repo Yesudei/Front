@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axiosInstance from '../../axiosInstance';
 import { useUser } from '../../UserContext';
+import '../../CSS/ShareAccessForm.css';
+
 
 function ShareAccessForm({ deviceId, onShareSuccess }) {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -8,6 +10,7 @@ function ShareAccessForm({ deviceId, onShareSuccess }) {
   const [statusMessage, setStatusMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const { accessToken } = useUser();
+  
 
   const handleShare = async (e) => {
     e.preventDefault();
@@ -65,26 +68,30 @@ function ShareAccessForm({ deviceId, onShareSuccess }) {
   };
 
   return (
-    <form onSubmit={handleShare} style={{ marginTop: '20px' }}>
+    <form className="form-card" onSubmit={handleShare}>
       <h3>Share Device Access</h3>
       <input
         type="text"
+        className="input-field"
         placeholder="User's phone number"
         value={phoneNumber}
         onChange={(e) => setPhoneNumber(e.target.value)}
-        style={{ width: '100%', marginBottom: '8px', padding: '6px' }}
       />
       <input
         type="text"
+        className="input-field"
         placeholder="Custom name"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        style={{ width: '100%', marginBottom: '8px', padding: '6px' }}
       />
-      <button type="submit" disabled={loading} style={{ padding: '8px 12px' }}>
+      <button
+        type="submit"
+        className="button-primary"
+        disabled={loading}
+      >
         {loading ? 'Sharing...' : 'Share Access'}
       </button>
-      {statusMessage && <p>{statusMessage}</p>}
+      {statusMessage && <p className="status-message">{statusMessage}</p>}
     </form>
   );
 }

@@ -1,111 +1,210 @@
+
 .taskbar {
   grid-area: taskbar;
   height: 100%;
   overflow-y: auto;
-  padding: 20px;
+  padding: 24px;
   box-sizing: border-box;
-  background-color: #f7f9fc;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
 .weather-section {
-  background: linear-gradient(135deg, #0288d1 0%, #26c6da 100%);
-  border-radius: 15px;
-  padding: 20px;
-  color: #fff;
-  margin-bottom: 20px;
+  background: linear-gradient(135deg, #3b82fe 0%, #1d4ed8 100%);
+  border-radius: 20px;
+  padding: 28px;
+  color: white;
+  margin-bottom: 24px;
   text-align: center;
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.25), 0 0 0 1px rgba(59, 130, 246, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.weather-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+  border-radius: 20px 20px 0 0;
 }
 
 .weather-info .location {
   font-size: 14px;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
+  opacity: 0.9;
+  font-weight: 500;
 }
 
 .weather-info .weather-icon {
-  font-size: 50px;
+  font-size: 52px;
+  margin-bottom: 12px;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
 }
 
 .weather-info .temperature {
-  font-size: 40px;
-  font-weight: bold;
+  font-size: 44px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .weather-info .date {
-  margin-top: 10px;
   font-size: 14px;
+  opacity: 0.85;
+  font-weight: 500;
 }
 
 .cards-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  margin-bottom: 20px;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .profile-card,
 .subscription-card {
-  border-radius: 10px;
-  padding: 20px;
-  color: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-card::before,
+.subscription-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+  border-radius: 18px 18px 0 0;
+}
+
+.profile-card:hover,
+.subscription-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
 }
 
 .profile-card {
-  background-color: #43a047; /* green */
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25);
 }
 
 .profile-card .title {
-  font-size: 14px;
-  opacity: 0.8;
+  font-size: 12px;
+  opacity: 0.85;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+  font-weight: 600;
 }
 
 .profile-card .name {
   font-size: 18px;
-  font-weight: bold;
-  margin: 10px 0;
+  font-weight: 700;
+  margin: 12px 0;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .profile-card .link {
   font-size: 12px;
+  opacity: 0.9;
+  font-weight: 500;
 }
 
 .subscription-card {
-  background-color: #0d1b2a; /* dark navy */
+  background: linear-gradient(135deg, #475569 0%, #334155 100%);
+  box-shadow: 0 8px 25px rgba(71, 85, 105, 0.25);
 }
 
 .subscription-card .title {
-  font-size: 14px;
-  opacity: 0.8;
+  font-size: 12px;
+  opacity: 0.85;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+  font-weight: 600;
 }
 
 .subscription-card .premium {
-  font-size: 15px;
-  font-weight: bold;
-  color: #76ff03;
-  margin: 10px 0;
+  font-size: 16px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 12px 0;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .subscription-card .until {
   font-size: 12px;
+  opacity: 0.85;
+  font-weight: 500;
 }
 
 .log-section {
-  background: #fff;
-  border-radius: 10px;
-  padding: 15px;
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -1px rgba(15, 23, 42, 0.03);
+}
+
+.log-section h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .log-entry {
-  border-bottom: 1px solid #eee;
-  padding: 10px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  padding: 14px 0;
+  transition: all 0.3s ease;
 }
 
 .log-entry:last-child {
   border-bottom: none;
 }
 
+.log-entry:hover {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  margin: 0 -12px;
+  padding: 14px 12px;
+  border-radius: 12px;
+  transform: translateX(2px);
+}
+
 .log-date {
   font-size: 12px;
-  color: #888;
+  background: linear-gradient(135deg, #3b82fe 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .log-item {
@@ -116,11 +215,14 @@
 
 .log-text {
   font-size: 14px;
+  color: #334155;
+  font-weight: 500;
 }
 
 .log-meta {
   font-size: 12px;
-  color: #666;
+  color: #64748b;
   display: flex;
-  gap: 10px;
+  gap: 12px;
+  font-weight: 500;
 }
