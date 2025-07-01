@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import axiosInstance, { setAccessTokenForInterceptor, setupInterceptors } from './axiosInstance';
 
-// Define normalizeUser function at the top level
+// Define normalizeUser function at the top levels
 const normalizeUser = (userInfo) => {
   if (!userInfo) return null;
   return {
