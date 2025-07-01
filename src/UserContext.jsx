@@ -28,6 +28,7 @@ export const UserProvider = ({ children }) => {
     return null;
   });
 
+  // Access token states
   const [accessToken, setAccessTokenState] = useState(() => {
     const token = localStorage.getItem('accessToken');
     return token || null;
