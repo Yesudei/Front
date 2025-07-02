@@ -29,7 +29,7 @@ function Card({
         </div>
         <h3 className="card-title">{title}</h3>
         <Switch
-          checked={isChecked}           // controlled only by localSwitchStates
+          checked={isChecked}          
           onChange={onToggle}
           className="antd-switch"
           checkedChildren="ON"

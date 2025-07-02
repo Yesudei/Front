@@ -124,7 +124,7 @@ const Home = () => {
         },
       });
 
-      const rules = res.data.rules || [];
+      const rules = res.data.rules?.rules || [];
       const firstRule = rules.length > 0 ? rules[0] : null;
 
       setStartTime(firstRule?.onTime || '');
@@ -153,9 +153,15 @@ const Home = () => {
             timezone: 'Asia/Ulaanbaatar',
           });
         } else {
+          console.log('Sending automation request with payload:', {
+            deviceId: automationDevice.clientId,
+            onTime: startTime,
+            offTime: endTime,
+            timezone: 'Asia/Ulaanbaatar',
+          });
+
           await axiosInstance.post('/mqtt/automation', {
-            clientId: automationDevice.clientId,
-            entity: automationDevice.entity || '',
+            deviceId: automationDevice._id,
             onTime: startTime,
             offTime: endTime,
             timezone: 'Asia/Ulaanbaatar',
@@ -166,7 +172,7 @@ const Home = () => {
         setAutomationDevice(null);
         setCurrentRuleId('');
       } catch (error) {
-        console.error('Error setting automation:', error);
+        console.error('Error setting automation:', error?.response?.data || error.message);
         alert('Failed to save automation settings.');
       }
     },
@@ -184,11 +190,9 @@ const Home = () => {
     const loadSessionAndUser = async () => {
       await fetchUserData();
 
-      // 🔍 Log /getuser result here
       try {
         const res = await axiosInstance.get('users/getuser');
-      } catch (err) {
-      }
+      } catch (err) {}
 
       setLoadingSession(false);
     };
@@ -224,7 +228,7 @@ const Home = () => {
               <Card
                 key={device._id || device.clientId}
                 Icon={() => <span />}
-                title={device.clientId}
+                title={device.owner?.[0]?.name || device.clientId}
                 isChecked={localSwitchStates[device.clientId] ?? false}
                 onToggle={() => toggleDevice(device.clientId, powerState, device.entity)}
                 status={status}

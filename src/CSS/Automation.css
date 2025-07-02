@@ -1,139 +1,382 @@
-.container {
+/* Main container styling */
+.automation-container {
   width: 100%;
   height: 100%;
   overflow-y: auto;
-  padding: 0;
+  padding: 24px;
   box-sizing: border-box;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  min-height: 100vh;
 }
 
-.deviceGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 25px;
-  margin-top: 20px;
+.automation-container h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 32px;
+  text-align: center;
+  position: relative;
 }
 
-.automationOverlay {
-  position: fixed;
+.automation-container h1::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #3498db, #2980b9);
+  border-radius: 2px;
+}
+
+/* Device box styling */
+.device-box {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 24px;
+  padding: 32px;
+  margin-bottom: 32px;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.device-box::before {
+  content: '';
+  position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10000;
-  backdrop-filter: blur(5px);
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3498db, #2980b9, #27ae60);
+  border-radius: 24px 24px 0 0;
 }
 
-.automationModal {
-  background: white;
-  color: #2c3e50;
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-  width: 90%;
-  max-width: 500px;
-  position: relative;
-  z-index: 10001;
-  animation: modalSlideIn 0.3s ease;
+.device-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 32px 80px rgba(0, 0, 0, 0.12),
+    0 16px 48px rgba(0, 0, 0, 0.08);
 }
 
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.automationModal h2 {
-  margin-top: 0;
+.device-box h2 {
   font-size: 24px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+/* Rule card styling */
+.rule-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 2px solid #e8ecf0;
+  border-radius: 20px;
+  padding: 24px;
   margin-bottom: 20px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.rule-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 16px 48px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border-color: #bdc3c7;
+}
+
+.rule-card p {
+  margin: 12px 0;
+  font-size: 15px;
+  color: #34495e;
+  font-weight: 500;
+}
+
+.rule-card p strong {
   color: #2c3e50;
   font-weight: 600;
 }
 
-.automationModal label {
+/* Edit form styling */
+.edit-form {
+  border: 2px solid #3498db;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  box-shadow: 
+    0 12px 40px rgba(52, 152, 219, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.edit-form label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
   font-weight: 600;
   color: #34495e;
-  font-size: 14px;
+  font-size: 15px;
+  letter-spacing: 0.3px;
 }
 
-.automationModal input[type="time"] {
+.edit-form input[type="time"],
+.edit-form input[type="text"] {
   width: 100%;
-  padding: 12px 16px;
+  padding: 14px 18px;
   font-size: 16px;
-  margin-bottom: 20px;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  background: #f8f9fa;
-  transition: all 0.3s ease;
+  margin-top: 8px;
+  border: 2px solid #e8ecf0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
+  font-family: inherit;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-.automationModal input[type="time"]:focus {
+.edit-form input[type="time"]:focus,
+.edit-form input[type="text"]:focus {
   outline: none;
   border-color: #3498db;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  background: #ffffff;
+  box-shadow: 
+    0 0 0 4px rgba(52, 152, 219, 0.15),
+    inset 0 2px 4px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(52, 152, 219, 0.15);
+  transform: translateY(-1px);
 }
 
-.automationModal button {
-  margin-right: 10px;
-  margin-top: 10px;
-  padding: 12px 20px;
+.edit-form input[type="time"]:hover,
+.edit-form input[type="text"]:hover {
+  border-color: #bdc3c7;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.04),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Button styling */
+.btn-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.edit-btn,
+.delete-btn,
+.add-btn {
+  padding: 12px 24px;
   font-size: 14px;
   cursor: pointer;
-  border-radius: 25px;
+  border-radius: 50px;
   border: none;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.5px;
+  font-family: inherit;
+  min-width: 120px;
+}
+
+.edit-btn {
   background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
   color: white;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+  box-shadow: 
+    0 6px 20px rgba(52, 152, 219, 0.3),
+    0 2px 6px rgba(52, 152, 219, 0.2);
 }
 
-.automationModal button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+.edit-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 12px 32px rgba(52, 152, 219, 0.4),
+    0 6px 16px rgba(52, 152, 219, 0.3);
 }
 
-.automationModal button[type="button"]:not(.viewTimersBtn) {
+.delete-btn {
   background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-  box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+  color: white;
+  box-shadow: 
+    0 6px 20px rgba(231, 76, 60, 0.3),
+    0 2px 6px rgba(231, 76, 60, 0.2);
 }
 
-.automationModal button[type="button"]:not(.viewTimersBtn):hover {
-  box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+.delete-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 12px 32px rgba(231, 76, 60, 0.4),
+    0 6px 16px rgba(231, 76, 60, 0.3);
 }
 
-.viewTimersBtn {
-  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%) !important;
-  box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3) !important;
+.add-btn {
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  color: white;
+  box-shadow: 
+    0 6px 20px rgba(39, 174, 96, 0.3),
+    0 2px 6px rgba(39, 174, 96, 0.2);
+  margin-bottom: 20px;
+  font-size: 16px;
+  padding: 16px 32px;
 }
 
-.viewTimersBtn:hover {
-  box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4) !important;
+.add-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 12px 32px rgba(39, 174, 96, 0.4),
+    0 6px 16px rgba(39, 174, 96, 0.3);
 }
 
-.statusText {
-  margin-left: 0;
-  margin-top: 15px;
-  font-size: 14px;
+/* Button shine effect */
+.edit-btn::before,
+.delete-btn::before,
+.add-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.edit-btn:hover::before,
+.delete-btn:hover::before,
+.add-btn:hover::before {
+  left: 100%;
+}
+
+/* Button active states */
+.edit-btn:active,
+.delete-btn:active,
+.add-btn:active {
+  transform: translateY(-1px);
+}
+
+.edit-btn:active {
+  box-shadow: 
+    0 4px 12px rgba(52, 152, 219, 0.3),
+    0 2px 6px rgba(52, 152, 219, 0.2);
+}
+
+.delete-btn:active {
+  box-shadow: 
+    0 4px 12px rgba(231, 76, 60, 0.3),
+    0 2px 6px rgba(231, 76, 60, 0.2);
+}
+
+.add-btn:active {
+  box-shadow: 
+    0 4px 12px rgba(39, 174, 96, 0.3),
+    0 2px 6px rgba(39, 174, 96, 0.2);
+}
+
+/* General paragraph styling */
+.automation-container p {
+  font-size: 16px;
   color: #7f8c8d;
+  text-align: center;
+  margin: 20px 0;
+  font-weight: 500;
 }
 
-.sensorData {
-  margin-top: 15px;
-  margin-left: 0;
-  font-size: 14px;
-  color: #34495e;
+.automation-container p[style*="color: red"] {
+  color: #e74c3c !important;
+  background: rgba(231, 76, 60, 0.1);
+  padding: 12px 20px;
+  border-radius: 12px;
+  border-left: 4px solid #e74c3c;
+  text-align: left;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .automation-container {
+    padding: 16px;
+  }
+  
+  .automation-container h1 {
+    font-size: 28px;
+  }
+  
+  .device-box {
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  
+  .device-box h2 {
+    font-size: 20px;
+  }
+  
+  .rule-card {
+    padding: 20px;
+  }
+  
+  .btn-group {
+    flex-direction: column;
+  }
+  
+  .edit-btn,
+  .delete-btn,
+  .add-btn {
+    width: 100%;
+    min-width: unset;
+  }
+}
+
+/* Enhanced focus states for accessibility */
+.edit-btn:focus-visible,
+.delete-btn:focus-visible,
+.add-btn:focus-visible {
+  outline: 3px solid rgba(52, 152, 219, 0.5);
+  outline-offset: 2px;
+}
+
+.edit-form input[type="time"]:focus-visible,
+.edit-form input[type="text"]:focus-visible {
+  outline: 3px solid rgba(52, 152, 219, 0.5);
+  outline-offset: 2px;
+}
+
+/* Loading states */
+.edit-btn.loading,
+.delete-btn.loading,
+.add-btn.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.edit-btn.loading::after,
+.delete-btn.loading::after,
+.add-btn.loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: auto;
+  border: 2px solid transparent;
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Special styling for empty states */
+.device-box p:last-child {
+  font-style: italic;
+  color: #95a5a6;
+  margin: 16px 0;
 }
