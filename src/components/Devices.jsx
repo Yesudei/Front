@@ -11,6 +11,9 @@ const Devices = () => {
   const [loadingRemove, setLoadingRemove] = useState(null);
   const { accessToken, user } = useUser();
 
+  // Convert logged-in user's phone number to string for comparison
+  const loggedInPhoneNumber = user?.phoneNumber ? String(user.phoneNumber).trim() : null;
+
   const fetchConnectedDevices = async () => {
     try {
       const res = await axiosInstance.get('/device/getDevices', {
@@ -20,7 +23,10 @@ const Devices = () => {
       if (res.data.success) {
         const normalizedDevices = (res.data.devices || []).map((device) => ({
           ...device,
-          _id: typeof device._id === 'object' && device._id.$oid ? device._id.$oid : device._id,
+          _id:
+            typeof device._id === 'object' && device._id.$oid
+              ? device._id.$oid
+              : device._id,
         }));
         setConnectedDevices(normalizedDevices);
       }
@@ -66,7 +72,8 @@ const Devices = () => {
   };
 
   const handleRemove = async (deviceId) => {
-    if (!window.confirm('Are you sure you want to remove this device from your list?')) return;
+    if (!window.confirm('Are you sure you want to remove this device from your list?'))
+      return;
 
     setLoadingRemove(deviceId);
     try {
@@ -131,13 +138,18 @@ const Devices = () => {
                     <strong>Shared With:</strong>
                     {owners.length > 0 ? (
                       <ul className="shared-user-list">
-                        {owners.map((user) => (
-                          <li key={user.userId || user.phoneNumber}>
-                            {user.name
-                              ? `${user.name} (${user.phoneNumber})`
-                              : user.phoneNumber}
-                          </li>
-                        ))}
+                        {owners.map((owner) => {
+                          const ownerPhone = String(owner.phoneNumber).trim();
+                          const isCurrentUser = ownerPhone === loggedInPhoneNumber;
+
+                          return (
+                            <li key={owner.userId || owner.phoneNumber}>
+                              {owner.name
+                                ? `${owner.name} (${owner.phoneNumber}${isCurrentUser ? ' — you' : ''})`
+                                : `${owner.phoneNumber}${isCurrentUser ? ' — you' : ''}`}
+                            </li>
+                          );
+                        })}
                       </ul>
                     ) : (
                       <p>No shared users</p>

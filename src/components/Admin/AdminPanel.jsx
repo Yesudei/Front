@@ -12,6 +12,14 @@ function AdminPanel() {
   const [deviceDetails, setDeviceDetails] = useState({});
   const [removingUser, setRemovingUser] = useState({}); // Track per-user removal state
 
+  // Parse logged-in user data from localStorage and extract phoneNumber as string
+  const userDataJson = localStorage.getItem('user');
+  const userData = userDataJson ? JSON.parse(userDataJson) : null;
+  const loggedInPhoneNumber = userData?.phoneNumber ? String(userData.phoneNumber).trim() : null;
+
+  // Debug log: logged-in phone number
+  console.log('Logged-in phone number:', loggedInPhoneNumber);
+
   useEffect(() => {
     fetchDevices();
   }, []);
@@ -51,6 +59,9 @@ function AdminPanel() {
       );
 
       const owners = response.data.owners || [];
+
+      // Debug log: owners data for device
+      console.log(`Owners for device ${deviceId}:`, owners);
 
       setDeviceDetails((prev) => ({
         ...prev,
@@ -144,26 +155,32 @@ function AdminPanel() {
                     <>
                       {owners.length > 0 ? (
                         <ul className="shared-user-list">
-                          {owners.map((user) => (
-                            <li key={user.userId || user.phoneNumber} className="shared-user-item">
-                              {user.name
-                                ? `${user.name} (${user.phoneNumber})`
-                                : user.phoneNumber}
-                              <button
-                                className="remove-user-button"
-                                onClick={() =>
-                                  handleRemoveUser(deviceId, user.phoneNumber)
-                                }
-                                disabled={
-                                  removingUser[deviceId + user.phoneNumber]
-                                }
-                              >
-                                {removingUser[deviceId + user.phoneNumber]
-                                  ? 'Removing...'
-                                  : 'Remove'}
-                              </button>
-                            </li>
-                          ))}
+                          {owners.map((user) => {
+                            const userPhone = String(user.phoneNumber).trim();
+                            const isCurrentUser = userPhone === loggedInPhoneNumber;
+
+                            // Debug log for each user in owners
+                            console.log(
+                              `User phone: ${userPhone}, logged-in phone: ${loggedInPhoneNumber}, isCurrentUser: ${isCurrentUser}`
+                            );
+
+                            return (
+                              <li key={user.userId || user.phoneNumber} className="shared-user-item">
+                                {user.name
+                                  ? `${user.name} (${user.phoneNumber}${isCurrentUser ? ' — you' : ''})`
+                                  : `${user.phoneNumber}${isCurrentUser ? ' — you' : ''}`}
+                                <button
+                                  className="remove-user-button"
+                                  onClick={() => handleRemoveUser(deviceId, user.phoneNumber)}
+                                  disabled={removingUser[deviceId + user.phoneNumber]}
+                                >
+                                  {removingUser[deviceId + user.phoneNumber]
+                                    ? 'Removing...'
+                                    : 'Remove'}
+                                </button>
+                              </li>
+                            );
+                          })}
                         </ul>
                       ) : (
                         <p>No shared users</p>
