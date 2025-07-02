@@ -11,6 +11,8 @@
   position: relative;
   overflow: hidden;
   min-height: 180px;
+  isolation: isolate;
+  contain: layout style paint;
 }
 
 .card::before {

@@ -1,3 +1,8 @@
+/* ========================================
+   ENHANCED DARK MODE CSS
+   ======================================== */
+
+/* ✅ BASE DARK MODE STYLES */
 body.dark,
 body.dark html,
 body.dark #root,
@@ -6,326 +11,1356 @@ body.dark .home-layout,
 body.dark .main-content,
 body.dark .page-content,
 body.dark .content-wrapper {
-  background-color: #1e1e2c !important;
-  color: #f0f0f0;
-    transition: transform 0.2s;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  color: #f1f5f9 !important;
+  transition: all 0.3s ease !important;
 }
+
 body.dark .grid-container {
-  background-color: #1e1e2c;
-  color: #f0f0f0;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #f1f5f9;
   min-height: 100vh;
-  
 }
+
 body.dark .main-container {
-  background-color: transparent; /* transparent so grid covers it */
+  background-color: transparent;
   color: inherit;
 }
 
 body.dark .taskbar-container {
-  background-color: #1e1e2f;
-  color: #eee;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #f1f5f9;
 }
 
+/* ========================================
+   ADMIN PANEL DARK MODE
+   ======================================== */
 
-body.dark {
-  background-color: #121212;
-  color: #f0f0f0;
-  transition: background-color 0.3s ease, color 0.3s ease;
+body.dark .admin-panel {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #f1f5f9;
 }
 
-body.dark .home-layout,
-body.dark .automation-container,
-body.dark .page-content,
-body.dark .main-content,
-body.dark .content-wrapper {
-  background-color: #121212;
-  color: #e0e0e0;
+body.dark .admin-panel h1 {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* ✅ SIDEBAR */
-body.dark #sidebar,
-body.dark .sidebar {
-  background-color: #1e1e2f;
-  color: #f0f0f0;
+body.dark .button-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
 
-body.dark #sidebar a,
-body.dark .sidebar a,
-body.dark #sidebar button,
-body.dark .sidebar button,
-body.dark .sidebar-dropdown,
-body.dark #sidebar::selection,
-body.dark .dropdown-scroll {
-  color: #ccc;
+body.dark .button-primary:hover {
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.5);
 }
 
-body.dark #sidebar a:hover,
-body.dark .sidebar a:hover,
-body.dark #sidebar button:hover,
-body.dark .sidebar button:hover {
-  color: #fff;
+body.dark .device-card {
+  background: linear-gradient(145deg, #1e293b 0%, #334155 100%);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  color: #f1f5f9;
 }
 
-body.dark #sidebar .sidebar-list-item:hover,
-body.dark .sidebar-list-item:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+body.dark .device-card:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
-/* ✅ HEADER */
+body.dark .device-card h3 {
+  color: #f1f5f9;
+}
+
+body.dark .device-card p {
+  color: #cbd5e1;
+}
+
+body.dark .device-card p strong {
+  color: #f1f5f9;
+}
+
+body.dark .device-status.online {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+body.dark .device-status.offline {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+body.dark .toggle-button {
+  background: linear-gradient(135deg, #334155, #475569);
+  border: 2px solid #475569;
+  color: #cbd5e1;
+}
+
+body.dark .toggle-button::before {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+body.dark .toggle-button:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+body.dark .shared-users {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+body.dark .shared-users h4 {
+  color: #f1f5f9;
+}
+
+body.dark .shared-user-item {
+  border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+body.dark .shared-user-item:hover {
+  background: linear-gradient(135deg, #334155 0%, #475569 100%);
+}
+
+body.dark .shared-user-name {
+  color: #f1f5f9;
+}
+
+body.dark .metric-item {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(6, 182, 212, 0.1));
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+body.dark .metric-item:hover {
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+}
+
+body.dark .metric-value {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.dark .metric-label {
+  color: #cbd5e1;
+}
+
+/* ========================================
+   HOME PAGE DARK MODE
+   ======================================== */
+
+body.dark .container {
+  background: transparent;
+}
+
+body.dark .deviceGrid {
+  background: transparent;
+}
+
+body.dark .automationOverlay {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+}
+
+body.dark .automationModal {
+  background: linear-gradient(145deg, #1e293b 0%, #334155 100%);
+  color: #f1f5f9;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(71, 85, 105, 0.3);
+}
+
+body.dark .automationModal h2 {
+  color: #f1f5f9;
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.dark .automationModal label {
+  color: #cbd5e1;
+}
+
+body.dark .automationModal input[type="time"] {
+  background: #334155;
+  border: 2px solid #475569;
+  color: #f1f5f9;
+}
+
+body.dark .automationModal input[type="time"]:focus {
+  border-color: #3b82f6;
+  background: #1e293b;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+body.dark .automationModal button {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+body.dark .automationModal button:hover {
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.5);
+}
+
+body.dark .automationModal button[type="button"]:not(.viewTimersBtn) {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+body.dark .automationModal button[type="button"]:not(.viewTimersBtn):hover {
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.5);
+}
+
+body.dark .viewTimersBtn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4) !important;
+}
+
+body.dark .viewTimersBtn:hover {
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.5) !important;
+}
+
+body.dark .statusText {
+  color: #cbd5e1;
+}
+
+body.dark .sensorData {
+  color: #e2e8f0;
+}
+
+/* ========================================
+   HEADER DARK MODE
+   ======================================== */
+
 body.dark .header {
-  background-color: #1e1e2f;
-  color: #f0f0f0;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(20px);
 }
-body.dark .header-right{
-    background-color: #1e1e2f;
-  color: #f0f0f0;
+
+body.dark .header h1 {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
-body.dark .user.menu {
-  background-color: #1e1e2f;
-  color: #f0f0f0;
+
+body.dark .menu-icon {
+  color: #cbd5e1;
 }
+
+body.dark .menu-icon:hover {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+body.dark .header-right {
+  background: transparent;
+}
+
+body.dark .user-menu button {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+body.dark .user-menu button:hover {
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.5);
+}
+
 body.dark .user-dropdown {
-  background-color: #1e1e2f;
-  color: #f0f0f0;
-}
-body.dark .user-dropdown li{
-  background-color: #1e1e2f;
-  color: #f0f0f0;
+  background: linear-gradient(145deg, #1e293b 0%, #334155 100%);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
 }
 
+body.dark .user-dropdown::before {
+  background: linear-gradient(145deg, #1e293b 0%, #334155 100%);
+  border-left: 1px solid rgba(71, 85, 105, 0.3);
+  border-top: 1px solid rgba(71, 85, 105, 0.3);
+}
 
-/* ✅ TASKBAR */
+body.dark .user-dropdown li {
+  color: #cbd5e1;
+}
+
+body.dark .user-dropdown li:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%);
+  color: #60a5fa;
+}
+
+/* ========================================
+   SIDEBAR DARK MODE
+   ======================================== */
+
+body.dark #sidebar {
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  box-shadow: 4px 0 6px -1px rgba(0, 0, 0, 0.3), 2px 0 4px -1px rgba(0, 0, 0, 0.2);
+  border-right: 1px solid rgba(71, 85, 105, 0.4);
+}
+
+body.dark .sidebar-title {
+  border-bottom: 1px solid rgba(71, 85, 105, 0.4);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%);
+}
+
+body.dark .sidebar-title h2 {
+  color: #f1f5f9;
+}
+
+body.dark .sidebar-list-item > a {
+  color: rgba(241, 245, 249, 0.8);
+}
+
+body.dark .sidebar-list-item:hover > a {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(6, 182, 212, 0.15) 100%);
+  color: #f1f5f9;
+  border-left-color: #60a5fa;
+}
+
+body.dark .sidebar-list-item > a.active {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(6, 182, 212, 0.2) 100%);
+  color: #f1f5f9;
+  border-left-color: #60a5fa;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+body.dark .sidebar-dropdown {
+  background: linear-gradient(135deg, rgba(71, 85, 105, 0.4) 0%, rgba(51, 65, 85, 0.3) 100%);
+  color: rgba(241, 245, 249, 0.9);
+}
+
+body.dark .sidebar-dropdown:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(6, 182, 212, 0.15) 100%);
+  border-left-color: #60a5fa;
+}
+
+body.dark .dropdown-scroll {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(71, 85, 105, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+body.dark .dropdown-scroll li {
+  color: rgba(241, 245, 249, 0.7);
+}
+
+body.dark .dropdown-scroll li:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%);
+  color: #f1f5f9;
+}
+
+/* ========================================
+   TASKBAR DARK MODE
+   ======================================== */
+
 body.dark .taskbar {
-  background-color: #1e1e2f;
-  color: #f0f0f0;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
-/* ✅ AUTOMATION BUTTON */
+body.dark .weather-section {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4), 0 0 0 1px rgba(59, 130, 246, 0.1);
+}
+
+body.dark .weather-section::before {
+  background: linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+}
+
+body.dark .weather-info .location,
+body.dark .weather-info .temperature,
+body.dark .weather-info .date {
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+body.dark .profile-card {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+body.dark .subscription-card {
+  background: linear-gradient(135deg, #475569 0%, #334155 100%);
+  box-shadow: 0 8px 25px rgba(71, 85, 105, 0.4);
+}
+
+body.dark .subscription-card .premium {
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.dark .log-section {
+  background: linear-gradient(145deg, #1e293b 0%, #334155 100%);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+body.dark .log-section h3 {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.dark .log-entry {
+  border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+body.dark .log-entry:hover {
+  background: linear-gradient(135deg, #334155 0%, #475569 100%);
+}
+
+body.dark .log-date {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.dark .log-text {
+  color: #f1f5f9;
+}
+
+body.dark .log-meta {
+  color: #cbd5e1;
+}
+
+/* ========================================
+   DEVICES PAGE DARK MODE
+   ======================================== */
+
+body.dark .devices-page {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+body.dark .devices-title {
+  color: #f1f5f9;
+}
+
+body.dark .device-column {
+  background: linear-gradient(145deg, #1e293b 0%, #334155 100%);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+body.dark .device-column:hover {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+body.dark .device-column h2 {
+  color: #f1f5f9;
+  border-bottom-color: #60a5fa;
+}
+
+body.dark .device-item {
+  border: 2px solid rgba(71, 85, 105, 0.3);
+  background: linear-gradient(135deg, #334155 0%, #475569 100%);
+  color: #f1f5f9;
+}
+
+body.dark .device-item:hover {
+  border-color: #60a5fa;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  box-shadow: 0 5px 20px rgba(59, 130, 246, 0.2);
+}
+
+body.dark .device-item button {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+}
+
+body.dark .device-item button:hover {
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+}
+
+/* ========================================
+   DEVICE CARDS AND AUTOMATION COMPONENTS
+   ======================================== */
+
+body.dark .card {
+  color: #f1f5f9;
+  background: linear-gradient(135deg, #334155, #475569);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+body.dark .card.hot {
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  box-shadow: 0 8px 20px rgba(220, 38, 38, 0.3);
+}
+
+body.dark .card.normal {
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  box-shadow: 0 8px 20px rgba(8, 145, 178, 0.3);
+}
+
+body.dark .card.cold {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  box-shadow: 0 8px 20px rgba(29, 78, 216, 0.3);
+}
+
 body.dark .automation-btn {
-  background: #444;
-  color: #fff;
+  background: rgba(59, 130, 246, 0.2);
+  color: #e2e8f0;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  backdrop-filter: blur(10px);
 }
 
 body.dark .automation-btn:hover {
-  background: #666;
+  background: rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.5);
+  transform: translateY(-2px);
 }
 
-/* ✅ DEVICE BOX (CARD WRAPPER) */
+/* ========================================
+   AUTOMATION FORMS AND CONTROLS
+   ======================================== */
+
 body.dark .automation-container .device-box {
-  background-color: #222230;
-  border: 1px solid #444455;
+  background: linear-gradient(145deg, #1e293b 0%, #334155 100%);
+  border: 1px solid rgba(71, 85, 105, 0.3);
 }
 
-/* ✅ RULE CARDS */
-body.dark .automation-container .rule-card,
-body.dark .deviceGrid > * {
-  background-color: #2c2c3e;
-  color: #ddd;
-  border: 1px solid #444;
-  box-shadow: none;
+body.dark .automation-container .rule-card {
+  background: linear-gradient(145deg, #334155 0%, #475569 100%);
+  color: #f1f5f9;
+  border: 1px solid rgba(71, 85, 105, 0.4);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
 }
 
-/* ✅ FORMS INSIDE RULE CARDS */
 body.dark .automation-container .edit-form input[type="time"],
 body.dark .automation-container .edit-form input[type="text"] {
-  background-color: #333344;
-  border: 1px solid #555577;
-  color: #eee;
+  background: #1e293b;
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  color: #f1f5f9;
 }
 
 body.dark .automation-container .edit-form input[type="time"]:focus,
 body.dark .automation-container .edit-form input[type="text"]:focus {
-  border-color: #8888ff;
-  background-color: #444466;
+  border-color: #60a5fa;
+  background: #0f172a;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
-/* ✅ BUTTONS */
 body.dark .automation-container button {
-  background-color: #444466;
-  color: #eee;
-  border: 1px solid #555577;
+  background: linear-gradient(135deg, #475569, #334155);
+  color: #f1f5f9;
+  border: 1px solid rgba(71, 85, 105, 0.5);
 }
 
 body.dark .automation-container button:hover {
-  background-color: #666688;
-  border-color: #8888ff;
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  border-color: #3b82f6;
 }
 
 body.dark .automation-container .edit-btn {
-  background-color: #3a3a5a;
-  border-color: #666699;
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  border-color: #3b82f6;
 }
 
 body.dark .automation-container .delete-btn {
-  background-color: #662222;
-  border-color: #993333;
-  color: #f88;
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  border-color: #ef4444;
+  color: #fecaca;
 }
 
 body.dark .automation-container .delete-btn:hover {
-  background-color: #883333;
-  border-color: #cc4444;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border-color: #f87171;
   color: #fff;
 }
 
 body.dark .automation-container .add-btn {
-  background-color: #335533;
-  border-color: #558855;
-  color: #cee;
+  background: linear-gradient(135deg, #059669, #047857);
+  border-color: #10b981;
+  color: #d1fae5;
 }
 
 body.dark .automation-container .add-btn:hover {
-  background-color: #557755;
-  border-color: #77aa77;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-color: #34d399;
 }
 
-/* ✅ HEADINGS */
 body.dark .automation-container h1,
 body.dark .automation-container h2 {
-  color: #ccddee;
+  color: #f1f5f9;
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* ✅ AUTOMATION OVERLAY AND MODAL */
-body.dark .automationOverlay {
-  background-color: rgba(0, 0, 0, 0.7);
+/* ========================================
+   RESPONSIVE DARK MODE ADJUSTMENTS
+   ======================================== */
+
+@media screen and (max-width: 768px) {
+  body.dark .admin-panel,
+  body.dark .devices-page {
+    padding: 1rem;
+  }
+  
+  body.dark .header {
+    padding: 0px 15px;
+  }
+  
+  body.dark .taskbar {
+    padding: 16px;
+  }
+}
+/* ===== COMPONENTS-DARKMODE.CSS ===== */
+/* Dark mode styles for component CSS files */
+
+/* ===== AUTH PAGE DARK MODE ===== */
+.dark-mode .center-page {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
-body.dark .automationModal {
-  background-color: #222;
-  color: #ddd;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+/* ===== AUTOMATION DARK MODE ===== */
+.dark-mode .automation-container {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #f1f5f9;
 }
 
-/* ✅ DEVICE GRID CONTAINER */
-body.dark .deviceGrid {
-  background-color: transparent; /* cards themselves handle their own bg */
+.dark-mode .automation-container h1 {
+  color: #f1f5f9;
 }
 
-body.dark .deviceGrid > * a,
-body.dark .deviceGrid > * button {
-  color: #ddd;
+.dark-mode .automation-container h1::after {
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
 }
 
-body.dark .deviceGrid > * a:hover,
-body.dark .deviceGrid > * button:hover {
-  color: #fff;
-}
-body.dark .sidebar-dropdown {
-  background-color: #2a2f3a; /* dark gray/blue */
-  border-bottom: 1px solid #444;
-  color: #ccc;
-}
-
-body.dark .sidebar-dropdown:hover {
-  background-color: #3b4150;
-  color: #eee;
+.dark-mode .device-box {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border: 1px solid #475569;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-body.dark #sidebar ::selection {
-  background-color: #448aff; /* bright blue selection */
+.dark-mode .device-box::before {
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8, #10b981);
+}
+
+.dark-mode .device-box:hover {
+  box-shadow: 
+    0 32px 80px rgba(0, 0, 0, 0.4),
+    0 16px 48px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .device-box h2 {
+  color: #f1f5f9;
+  border-bottom: 2px solid #475569;
+}
+
+.dark-mode .rule-card {
+  background: linear-gradient(135deg, #334155 0%, #475569 100%);
+  border: 2px solid #64748b;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .rule-card:hover {
+  box-shadow: 
+    0 16px 48px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-color: #94a3b8;
+}
+
+.dark-mode .rule-card p {
+  color: #cbd5e1;
+}
+
+.dark-mode .rule-card p strong {
+  color: #f1f5f9;
+}
+
+.dark-mode .edit-form {
+  background: linear-gradient(135deg, #334155 0%, #475569 100%);
+  border: 2px solid #3b82f6;
+  box-shadow: 
+    0 12px 40px rgba(59, 130, 246, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .edit-form label {
+  color: #cbd5e1;
+}
+
+.dark-mode .edit-form input[type="time"],
+.dark-mode .edit-form input[type="text"] {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border: 2px solid #64748b;
+  color: #f1f5f9;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .edit-form input[type="time"]:focus,
+.dark-mode .edit-form input[type="text"]:focus {
+  background: #334155;
+  border-color: #3b82f6;
+  box-shadow: 
+    0 0 0 4px rgba(59, 130, 246, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.2),
+    0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.dark-mode .edit-form input[type="time"]:hover,
+.dark-mode .edit-form input[type="text"]:hover {
+  border-color: #94a3b8;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .automation-container p {
+  color: #94a3b8;
+}
+
+.dark-mode .automation-container p[style*="color: red"] {
+  color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.15);
+  border-left: 4px solid #ef4444;
+}
+
+/* ===== CARD DARK MODE ===== */
+.dark-mode .card {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border: 1px solid #475569;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .card::before {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.4), rgba(59, 130, 246, 0.1));
+}
+
+.dark-mode .card:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .card-metrics > div {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.dark-mode .card-metrics > div:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .card.hot {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  box-shadow: 0 6px 25px rgba(220, 38, 38, 0.3);
+}
+
+.dark-mode .card.normal {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  box-shadow: 0 6px 25px rgba(59, 130, 246, 0.3);
+}
+
+.dark-mode .card.cold {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 6px 25px rgba(5, 150, 105, 0.3);
+}
+
+.dark-mode .automation-btn {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .automation-btn:hover {
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .automationOverlay {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+}
+
+.dark-mode .automationModal {
+  background: linear-gradient(145deg, #1e293b 0%, #334155 100%);
+  color: #f1f5f9;
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.4), 
+    0 0 0 1px rgba(71, 85, 105, 0.3);
+  border: 1px solid #475569;
+}
+
+.dark-mode .automationModal h2 {
+  color: #f1f5f9;
+  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark-mode .automationModal label {
+  color: #cbd5e1;
+}
+
+.dark-mode .automationModal input[type="time"] {
+  background: #0f172a;
+  border: 2px solid #475569;
+  color: #f1f5f9;
+}
+
+.dark-mode .automationModal input[type="time"]:focus {
+  background: #1e293b;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.dark-mode .statusText {
+  color: #94a3b8;
+}
+
+.dark-mode .sensorData {
+  color: #cbd5e1;
+}
+
+/* ===== PROFILE DARK MODE ===== */
+.dark-mode .wrapper {
+  background: rgba(30, 41, 59, 0.95);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+.dark-mode .wrapper::before {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+.dark-mode .form-header h1 {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark-mode .close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+}
+
+.dark-mode .close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #cbd5e1;
+}
+
+.dark-mode .avatar {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+}
+
+.dark-mode .input-box label {
+  color: #cbd5e1;
+}
+
+.dark-mode .input-box input {
+  background: rgba(15, 23, 42, 0.8);
+  border: 2px solid #475569;
+  color: #f1f5f9;
+}
+
+.dark-mode .input-box input:focus {
+  border-color: #3b82f6;
+  background: rgba(30, 41, 59, 1);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+.dark-mode .input-box input[readonly] {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: #94a3b8;
+  border-color: #334155;
+}
+
+.dark-mode .input-box::before {
+  color: #64748b;
+}
+
+.dark-mode .input-box:focus-within::before {
+  color: #3b82f6;
+}
+
+.dark-mode .login-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+.dark-mode .login-btn:hover {
+  box-shadow: 0 12px 35px rgba(59, 130, 246, 0.5);
+}
+
+/* ===== UTILITIES DARK MODE ===== */
+.dark-mode .icon {
+  color: rgba(241, 245, 249, 0.9);
+}
+
+.dark-mode .icon_header {
+  color: rgba(241, 245, 249, 0.8);
+}
+
+.dark-mode .icon:hover {
+  color: #f1f5f9;
+}
+
+.dark-mode .user-dropdown {
+  background: rgba(30, 41, 59, 0.95);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+.dark-mode .user-dropdown::before {
+  background: rgba(30, 41, 59, 0.95);
+  border-top: 1px solid rgba(71, 85, 105, 0.3);
+  border-left: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+.dark-mode .user-dropdown li {
+  color: #cbd5e1;
+}
+
+.dark-mode .user-dropdown li:hover {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   color: white;
-  box-shadow: 0 0 0 2px white inset;
-  border-radius: 12px;
 }
 
-body.dark .dropdown-scroll {
-  max-height: 120px;
-  overflow-y: auto;
-  background-color: #222531;
-  border-radius: 12px;
-  border-bottom: 1px solid #444;
-  color: #ccc;
+.dark-mode .user-button {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
-body.dark .dropdown-scroll ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  border-radius: 12px;
+.dark-mode .user-button:hover {
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
-body.dark .dropdown-scroll li {
-  padding: 10px 30px;
-  cursor: pointer;
-  font-size: 14px;
-  border-radius: 12px;
-  color: #ccc;
+.dark-mode .nav-item {
+  color: rgba(241, 245, 249, 0.8);
 }
 
-body.dark .dropdown-scroll li:hover {
-  background-color: #3b4150;
-  color: #eee;
-}
-body.dark .log-section {
-  background: #1e1e2f;
-  color: #ddd;
-  border-radius: 10px;
-  padding: 15px;
+.dark-mode .nav-item:hover {
+  background: rgba(0, 0, 0, 0.2);
+  color: #f1f5f9;
 }
 
-body.dark .log-entry {
-  border-bottom: 1px solid #444;
-  padding: 10px 0;
+.dark-mode .nav-item.active {
+  background: rgba(0, 0, 0, 0.3);
+  color: #f1f5f9;
 }
 
-body.dark .log-entry:last-child {
-  border-bottom: none;
+.dark-mode .nav-item::before {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
 }
 
-body.dark .log-date {
-  font-size: 12px;
-  color: #999;
+.dark-mode .slider {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-body.dark .log-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.dark-mode .slider::before {
+  background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-body.dark .log-text {
-  font-size: 14px;
-  color: #ccc;
+.dark-mode .switch input:checked + .slider {
+  background: linear-gradient(135deg, #059669, #047857);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-body.dark .log-meta {
-  font-size: 12px;
-  color: #aaa;
-  display: flex;
-  gap: 10px;
+.dark-mode .switch input:checked + .slider::before {
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
 }
-body.dark .card {
-  /* Keep layout and general styles */
-  color: #eee;
-  background: #333; /* fallback neutral dark background */
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-  transition: transform 0.2s;
+
+.dark-mode .device-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.3), rgba(51, 65, 85, 0.2));
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
+
+.dark-mode .device-card:hover {
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  border-color: rgba(71, 85, 105, 0.4);
+}
+
+.dark-mode .gradient-text {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== SHARE ACCESS FORM DARK MODE ===== */
+.dark-mode .form-card {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .form-card h3 {
+  color: #f1f5f9;
+}
+
+.dark-mode .input-field {
+  background-color: #0f172a;
+  border: 1px solid #475569;
+  color: #f1f5f9;
+}
+
+.dark-mode .input-field:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.dark-mode .input-field::placeholder {
+  color: #64748b;
+}
+
+.dark-mode .status-message {
+  color: #10b981;
+}
+
+/* Button dark mode overrides for consistency */
+.dark-mode .edit-btn,
+.dark-mode .delete-btn,
+.dark-mode .add-btn {
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .edit-btn:hover,
+.dark-mode .delete-btn:hover,
+.dark-mode .add-btn:hover {
+  box-shadow: 
+    0 12px 32px rgba(0, 0, 0, 0.4),
+    0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .edit-btn:active,
+.dark-mode .delete-btn:active,
+.dark-mode .add-btn:active {
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive dark mode adjustments */
+@media (max-width: 768px) {
+  .dark-mode .automation-container {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  }
+  
+  .dark-mode .device-box {
+    box-shadow: 
+      0 16px 48px rgba(0, 0, 0, 0.3),
+      0 8px 24px rgba(0, 0, 0, 0.2);
+  }
+}
+/* ✅ BASE DARK MODE STYLES */
+body.dark, 
+body.dark html, 
+body.dark #root, 
+body.dark .App, 
+body.dark .home-layout, 
+body.dark .main-content, 
+body.dark .page-content, 
+body.dark .content-wrapper {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  color: #f1f5f9 !important;
+  transition: all 0.3s ease !important;
+}
+
+body.dark .grid-container {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #f1f5f9;
+  min-height: 100vh;
+}
+
+body.dark .main-container {
+  background-color: transparent;
+  color: inherit;
+}
+
+/* ✅ HOME PAGE CARDS FIX */
+body.dark .deviceGrid,
+/* 🔥 Hot card in dark mode */
 body.dark .card.hot {
-  background: linear-gradient(135deg, #a33b3b, #b86746);
-  color: #eee;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+  background: linear-gradient(135deg, #b91c1c 0%, #f87171 100%) !important;
+  box-shadow: 0 6px 25px rgba(239, 68, 68, 0.25);
 }
 
+/* 🌡️ Normal card in dark mode */
 body.dark .card.normal {
-  background: linear-gradient(135deg, #3a8a8a, #2a4f7f);
-  color: #eee;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+  background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%) !important;
+  box-shadow: 0 6px 25px rgba(96, 165, 250, 0.25);
 }
 
+/* ❄️ Cold card in dark mode */
 body.dark .card.cold {
-  background: linear-gradient(135deg, #2c9aa5, #3a5a9a);
-  color: #eee;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+  background: linear-gradient(135deg, #0f766e 0%, #5eead4 100%) !important;
+  box-shadow: 0 6px 25px rgba(20, 184, 166, 0.25);
+}
+
+/* 🧱 Base card fallback for dark mode (if no status class) */
+body.dark .card {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+  border: 1px solid #475569 !important;
+  color: #f1f5f9 !important;
+}
+
+body.dark .card-title,
+body.dark .card-metrics,
+body.dark .card-metrics p,
+body.dark .card-metrics strong,
+body.dark .sensorData,
+body.dark .sensorData p,
+body.dark .lwtStatus {
+  color: #f1f5f9 !important;
+  background: transparent !important;
 }
 
 body.dark .automation-btn {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ddd;
-  transition: background 0.3s, transform 0.2s;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+  color: white !important;
+  border: 1px solid #2563eb !important;
 }
 
 body.dark .automation-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+}
+
+/* ✅ DEVICES PAGE FIX */
+body.dark .devices-page,
+body.dark .devices-title {
+  background: transparent !important;
+  color: #f1f5f9 !important;
+}
+
+body.dark .device-list,
+body.dark .device-card {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+  border: 1px solid #475569 !important;
+  color: #f1f5f9 !important;
+}
+
+body.dark .device-card h3,
+body.dark .device-card p,
+body.dark .shared-users,
+body.dark .shared-users strong,
+body.dark .shared-user-list,
+body.dark .shared-user-list li {
+  color: #f1f5f9 !important;
+  background: transparent !important;
+}
+
+body.dark .device-card button,
+body.dark .toggle-button {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+  color: white !important;
+  border: 1px solid #2563eb !important;
+}
+
+body.dark .device-card button:hover,
+body.dark .toggle-button:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+}
+
+/* ✅ AUTOMATION PAGE FIX */
+body.dark .automation-container,
+body.dark .device-box,
+body.dark .rule-card {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+  border: 1px solid #475569 !important;
+  color: #f1f5f9 !important;
+}
+
+body.dark .automation-container h1,
+body.dark .automation-container h2,
+body.dark .automation-container p,
+body.dark .device-box h2,
+body.dark .rule-card p,
+body.dark .rule-card strong,
+body.dark .edit-form label {
+  color: #f1f5f9 !important;
+}
+
+body.dark .edit-form input[type="time"],
+body.dark .edit-form input[type="text"] {
+  background: #334155 !important;
+  border: 1px solid #475569 !important;
+  color: #f1f5f9 !important;
+}
+
+body.dark .add-btn,
+body.dark .edit-btn {
+  background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important;
+  color: white !important;
+  border: 1px solid #059669 !important;
+}
+
+body.dark .delete-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: 1px solid #dc2626 !important;
+}
+
+/* ✅ PROFILE PAGE FIX */
+body.dark .profile-container,
+body.dark .profile-section,
+body.dark .profile-form,
+body.dark .profile-info {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+  border: 1px solid #475569 !important;
+  color: #f1f5f9 !important;
+}
+
+body.dark .profile-container h1,
+body.dark .profile-container h2,
+body.dark .profile-container h3,
+body.dark .profile-container p,
+body.dark .profile-container label,
+body.dark .profile-form label {
+  color: #f1f5f9 !important;
+}
+
+body.dark .profile-form input,
+body.dark .profile-form select,
+body.dark .profile-form textarea {
+  background: #334155 !important;
+  border: 1px solid #475569 !important;
+  color: #f1f5f9 !important;
+}
+
+/* ✅ AUTH PAGES FIX */
+body.dark .center-page,
+body.dark .auth-container,
+body.dark .login-form,
+body.dark .register-form {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+  color: #f1f5f9 !important;
+}
+
+body.dark .auth-container h1,
+body.dark .auth-container h2,
+body.dark .auth-container p,
+body.dark .auth-container label {
+  color: #f1f5f9 !important;
+}
+
+body.dark .auth-container input {
+  background: #334155 !important;
+  border: 1px solid #475569 !important;
+  color: #f1f5f9 !important;
+}
+
+/* ✅ MODAL/OVERLAY FIX */
+body.dark .automationOverlay {
+  background: rgba(15, 23, 42, 0.8) !important;
+}
+
+body.dark .automationModal {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+  border: 1px solid #475569 !important;
+  color: #f1f5f9 !important;
+}
+
+body.dark .automationModal h2,
+body.dark .automationModal label {
+  color: #f1f5f9 !important;
+}
+
+body.dark .automationModal input {
+  background: #334155 !important;
+  border: 1px solid #475569 !important;
+  color: #f1f5f9 !important;
+}
+
+body.dark .automationModal button {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+  color: white !important;
+  border: 1px solid #2563eb !important;
+}
+
+/* ✅ GENERAL CONTAINER FIXES */
+body.dark .page,
+body.dark .section,
+body.dark .container,
+body.dark .wrapper,
+body.dark .content,
+body.dark [class*="container"],
+body.dark [class*="wrapper"],
+body.dark [class*="page"] {
+  background: transparent !important;
+  color: #f1f5f9 !important;
+}
+
+/* ✅ FORM ELEMENTS UNIVERSAL FIX */
+body.dark input,
+body.dark select,
+body.dark textarea,
+body.dark button:not(.antd-switch):not([class*="ant-"]) {
+  background: #334155 !important;
+  border: 1px solid #475569 !important;
+  color: #f1f5f9 !important;
+}
+
+body.dark input:focus,
+body.dark select:focus,
+body.dark textarea:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* ✅ BUTTONS UNIVERSAL FIX */
+body.dark button:not(.antd-switch):not([class*="ant-"]):not(.user-button):not(.menu-icon) {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+  color: white !important;
+  border: 1px solid #2563eb !important;
+}
+
+body.dark button:not(.antd-switch):not([class*="ant-"]):hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+}
+
+/* ✅ LIST ELEMENTS */
+body.dark ul,
+body.dark li,
+body.dark ol {
+  background: transparent !important;
+  color: #f1f5f9 !important;
+}
+
+/* ✅ ANTD SWITCH DARK MODE */
+body.dark .antd-switch {
+  background-color: #475569 !important;
+}
+
+body.dark .antd-switch.ant-switch-checked {
+  background-color: #3b82f6 !important;
+}
+
+/* ✅ TASKBAR DARK MODE */
+body.dark .taskbar,
+body.dark .weather-section,
+body.dark .profile-card,
+body.dark .subscription-card,
+body.dark .log-section,
+body.dark .log-entry {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+  color: #f1f5f9 !important;
+  border-color: #475569 !important;
 }

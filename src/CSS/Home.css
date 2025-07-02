@@ -6,12 +6,19 @@
   padding: 0;
   box-sizing: border-box;
 }
-
 .deviceGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 380px));
   gap: 25px;
-  margin-top: 20px;
+  margin: 0 auto;
+  margin-top: 10px;
+  max-width: 1400px;
+  padding: 5 20px;
+  justify-content: start;
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  contain: layout style;
 }
 
 .automationOverlay {
