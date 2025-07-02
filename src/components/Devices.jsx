@@ -1,25 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../axiosInstance';
 import { useUser } from '../UserContext';
+import ShareAccessForm from './Admin/ShareAccessForm';
 import '../CSS/Devices.css';
 
 const Devices = () => {
   const [connectedDevices, setConnectedDevices] = useState([]);
-  const { accessToken, user } = useUser();
+  const [deviceDetails, setDeviceDetails] = useState({});
+  const [showSharedWith, setShowSharedWith] = useState({});
   const [loadingRemove, setLoadingRemove] = useState(null);
+  const { accessToken, user } = useUser();
 
   const fetchConnectedDevices = async () => {
     try {
       const res = await axiosInstance.get('/device/getDevices', {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
+
       if (res.data.success) {
-        const normalizedDevices = (res.data.devices || []).map(device => ({
+        const normalizedDevices = (res.data.devices || []).map((device) => ({
           ...device,
-          _id:
-            typeof device._id === 'object' && device._id.$oid
-              ? device._id.$oid
-              : device._id,
+          _id: typeof device._id === 'object' && device._id.$oid ? device._id.$oid : device._id,
         }));
         setConnectedDevices(normalizedDevices);
       }
@@ -34,63 +35,42 @@ const Devices = () => {
     }
   }, [accessToken, user]);
 
-  const accessibleDevices = connectedDevices.filter(device => {
-    if (!device.owner || device.owner.length === 0) return false;
-    const userIdStr = user._id.toString();
-    return device.owner.some(ownerObj => {
-      const ownerUserId = ownerObj.userId;
-      let ownerUserIdStr = '';
-      if (
-        typeof ownerUserId === 'object' &&
-        ownerUserId !== null &&
-        '$oid' in ownerUserId
-      ) {
-        ownerUserIdStr = ownerUserId.$oid;
-      } else if (typeof ownerUserId === 'string') {
-        ownerUserIdStr = ownerUserId;
-      }
-      return ownerUserIdStr === userIdStr;
-    });
-  });
-
-  const handleRemove = async deviceId => {
-    if (
-      !window.confirm(
-        'Are you sure you want to remove this device from your list?'
-      )
-    )
-      return;
-
-    setLoadingRemove(deviceId);
-
+  const fetchDeviceOwners = async (deviceId) => {
     try {
-      const ownersResponse = await axiosInstance.post(
+      const response = await axiosInstance.post(
         '/device/getOwners',
         { deviceId },
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-
-      if (!ownersResponse.data.success) {
-        alert('Failed to get device owners');
-        setLoadingRemove(null);
-        return;
+      if (response.data.success) {
+        const owners = response.data.owners || [];
+        setDeviceDetails((prev) => ({
+          ...prev,
+          [deviceId]: { owners },
+        }));
       }
+    } catch (error) {
+      console.error(`Error fetching owners for device ${deviceId}:`, error.message);
+    }
+  };
 
-      const allOwners = ownersResponse.data.owners || [];
+  const toggleShowSharedWith = async (deviceId) => {
+    setShowSharedWith((prev) => ({
+      ...prev,
+      [deviceId]: !prev[deviceId],
+    }));
 
-      const userPhoneFound = allOwners.some(
-        owner => owner.phoneNumber === user.phoneNumber
-      );
+    if (!deviceDetails[deviceId]) {
+      await fetchDeviceOwners(deviceId);
+    }
+  };
 
-      if (!userPhoneFound) {
-        alert('Your phone number is not associated with this device.');
-        setLoadingRemove(null);
-        return;
-      }
+  const handleRemove = async (deviceId) => {
+    if (!window.confirm('Are you sure you want to remove this device from your list?')) return;
 
-      const removeResponse = await axiosInstance.post(
+    setLoadingRemove(deviceId);
+    try {
+      const response = await axiosInstance.post(
         '/device/removeUserFromDevice',
         {
           id: deviceId,
@@ -101,10 +81,10 @@ const Devices = () => {
         }
       );
 
-      if (removeResponse.data.success) {
+      if (response.data.success) {
         fetchConnectedDevices();
       } else {
-        alert(removeResponse.data.message || 'Failed to remove device.');
+        alert(response.data.message || 'Failed to remove device.');
       }
     } catch (err) {
       console.error('Error removing device:', err.response?.data || err.message);
@@ -116,32 +96,61 @@ const Devices = () => {
 
   return (
     <div className="devices-page">
-      <h1 className="devices-title">My Devices</h1>
+      <h1 className="devices-title">Manage My Devices</h1>
 
-      <div className="devices-columns">
-        <div className="device-column">
-          {accessibleDevices.length === 0 ? (
-            <p>No devices shared with you.</p>
-          ) : (
-            <ul className="device-list">
-              {accessibleDevices.map(device => (
-                <li key={device._id} className="device-item">
-                  <div>
-                    <strong>{device.clientId || device._id}</strong> —{' '}
-                    {device.entity || 'Unknown Entity'}
+      {connectedDevices.length === 0 ? (
+        <p>No devices found.</p>
+      ) : (
+        <ul className="device-list">
+          {connectedDevices.map((device) => {
+            const deviceId = device._id;
+            const owners = deviceDetails[deviceId]?.owners || [];
+            const deviceName = device.name || device.clientId || deviceId;
+
+            return (
+              <li key={deviceId} className="device-card">
+                <h3>Device: {deviceName}</h3>
+                <p>Type: {device.type || 'Unknown'}</p>
+
+                <button
+                  onClick={() => handleRemove(deviceId)}
+                  disabled={loadingRemove === deviceId}
+                >
+                  {loadingRemove === deviceId ? 'Removing...' : 'Remove Device'}
+                </button>
+
+                <button
+                  onClick={() => toggleShowSharedWith(deviceId)}
+                  className="toggle-button"
+                >
+                  {showSharedWith[deviceId] ? 'Hide Shared Users' : 'Show Shared Users'}
+                </button>
+
+                {showSharedWith[deviceId] && (
+                  <div className="shared-users">
+                    <strong>Shared With:</strong>
+                    {owners.length > 0 ? (
+                      <ul className="shared-user-list">
+                        {owners.map((user) => (
+                          <li key={user.userId || user.phoneNumber}>
+                            {user.name
+                              ? `${user.name} (${user.phoneNumber})`
+                              : user.phoneNumber}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>No shared users</p>
+                    )}
                   </div>
-                  <button
-                    onClick={() => handleRemove(device._id)}
-                    disabled={loadingRemove === device._id}
-                  >
-                    {loadingRemove === device._id ? 'Removing...' : 'Remove Device'}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
+                )}
+
+                <ShareAccessForm deviceId={deviceId} />
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 };

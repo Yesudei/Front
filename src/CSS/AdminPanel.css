@@ -373,3 +373,14 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+
+.shared-user-list {
+  list-style-type: disc;
+  margin-left: 1.5rem;
+  padding-left: 0;
+}
+
+.shared-user-list li {
+  margin-bottom: 4px;
+}

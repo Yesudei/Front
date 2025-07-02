@@ -120,11 +120,9 @@ export const UserProvider = ({ children }) => {
       if (newToken) {
         setAccessToken(newToken);
 
-        // Fetch updated user data from /users/getuser
         const userResponse = await axiosInstance.get('/users/getuser');
         console.log('User data fetched after token refresh:', userResponse.data);
 
-        // IMPORTANT: pass userResponse.data.user, NOT userResponse.data
         setUser(userResponse.data.user);
 
         return newToken;
