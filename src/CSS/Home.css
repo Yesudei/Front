@@ -12,10 +12,11 @@
 .deviceGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 380px));
-  gap: 25px;
+  gap: 15px;
   margin: 0 auto;
   max-width: 1400px;
-  padding: 0 20px;
+  padding: 10 20px;
+  margin-top: 20px;
   justify-content: start;
   position: relative;
   z-index: 1;
