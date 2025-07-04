@@ -1075,13 +1075,16 @@ body.dark,
 body.dark html, 
 body.dark #root, 
 body.dark .App, 
-body.dark .home-layout, 
-body.dark .main-content, 
-body.dark .page-content, 
-body.dark .content-wrapper {
+body.dark .home-layout,
+body.dark .main-content,
+body.dark .page-content,
+body.dark .content-wrapper,
+body.dark .container,
+body.dark .deviceGrid,
+body.dark .grid-container {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
   color: #f1f5f9 !important;
-  transition: all 0.3s ease !important;
+  min-height: 100vh;
 }
 
 body.dark .grid-container {
@@ -1234,7 +1237,7 @@ body.dark .profile-container h3,
 body.dark .profile-container p,
 body.dark .profile-container label,
 body.dark .profile-form label {
-  color: #f1f5f9 !important;
+  color: white !important;
 }
 
 body.dark .profile-form input,
@@ -1363,4 +1366,271 @@ body.dark .log-entry {
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
   color: #f1f5f9 !important;
   border-color: #475569 !important;
+}
+/* ========================================
+   DARK MODE CARD SECTION FIX
+   ======================================== */
+
+/* Main container backgrounds for dark mode */
+body.dark .home-layout,
+body.dark .main-content,
+body.dark .page-content,
+body.dark .content-wrapper,
+body.dark .container,
+body.dark .deviceGrid,
+body.dark .grid-container {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  color: #f1f5f9 !important;
+  min-height: 10vh;
+}
+
+/* Card container and grid specific fixes */
+body.dark .card-container,
+body.dark .device-container,
+body.dark .cards-grid,
+body.dark .device-grid {
+  background: transparent !important;
+  padding: 20px;
+}
+
+/* Page header section */
+body.dark .page-header,
+body.dark .section-header {
+  background: transparent !important;
+  color: #f1f5f9 !important;
+}
+
+body.dark .page-header h1,
+body.dark .section-header h1,
+body.dark .page-title {
+  color: #f1f5f9 !important;
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+}
+
+/* Card base styles - Enhanced for dark mode */
+body.dark .card {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+  border: 1px solid rgba(71, 85, 105, 0.4) !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+}
+
+body.dark .card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+}
+
+/* Temperature-based card colors for dark mode */
+body.dark .card.hot {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  box-shadow: 
+    0 10px 30px rgba(220, 38, 38, 0.3),
+    0 0 0 1px rgba(239, 68, 68, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark .card.hot::before {
+  background: linear-gradient(90deg, transparent, rgba(248, 113, 113, 0.3), transparent);
+}
+
+body.dark .card.normal {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  box-shadow: 
+    0 10px 30px rgba(59, 130, 246, 0.3),
+    0 0 0 1px rgba(96, 165, 250, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark .card.normal::before {
+  background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.3), transparent);
+}
+
+body.dark .card.cold {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 
+    0 10px 30px rgba(5, 150, 105, 0.3),
+    0 0 0 1px rgba(20, 184, 166, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark .card.cold::before {
+  background: linear-gradient(90deg, transparent, rgba(94, 234, 212, 0.3), transparent);
+}
+
+/* Card content styling */
+body.dark .card-title,
+body.dark .card-header,
+body.dark .card-header h2,
+body.dark .card-header h3 {
+  color: #ffffff !important;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+body.dark .card-metrics,
+body.dark .card-content,
+body.dark .card-body {
+  background: transparent !important;
+  color: #ffffff !important;
+}
+
+body.dark .card-metrics p,
+body.dark .card-metrics strong,
+body.dark .card-metrics span,
+body.dark .sensorData,
+body.dark .sensorData p,
+body.dark .sensorData strong,
+body.dark .temperature-value,
+body.dark .humidity-value,
+body.dark .pressure-value {
+  color: #ffffff !important;
+  background: transparent !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Status indicators */
+body.dark .device-status,
+body.dark .connection-status,
+body.dark .lwtStatus {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+}
+
+body.dark .device-status.online,
+body.dark .connection-status.online {
+  background: rgba(16, 185, 129, 0.3) !important;
+  border: 1px solid rgba(16, 185, 129, 0.5);
+}
+
+body.dark .device-status.offline,
+body.dark .connection-status.offline {
+  background: rgba(239, 68, 68, 0.3) !important;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+/* Automation button styling */
+body.dark .automation-btn {
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+body.dark .automation-btn:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Card hover effects */
+body.dark .card:hover {
+  transform: translateY(-4px);
+  transition: all 0.3s ease;
+}
+
+body.dark .card.hot:hover {
+  box-shadow: 
+    0 15px 40px rgba(220, 38, 38, 0.4),
+    0 0 0 1px rgba(239, 68, 68, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark .card.normal:hover {
+  box-shadow: 
+    0 15px 40px rgba(59, 130, 246, 0.4),
+    0 0 0 1px rgba(96, 165, 250, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark .card.cold:hover {
+  box-shadow: 
+    0 15px 40px rgba(5, 150, 105, 0.4),
+    0 0 0 1px rgba(20, 184, 166, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Icon styling within cards */
+body.dark .card .icon,
+body.dark .card .device-icon,
+body.dark .card .status-icon {
+  color: rgba(255, 255, 255, 0.9) !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Switch/Toggle styling within cards */
+body.dark .card .toggle-switch,
+body.dark .card .device-switch {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark .card .toggle-switch.on,
+body.dark .card .device-switch.on {
+  background: rgba(16, 185, 129, 0.3) !important;
+  border-color: rgba(16, 185, 129, 0.5) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  body.dark .card-container,
+  body.dark .device-container {
+    padding: 10px;
+  }
+  
+  body.dark .card {
+    margin-bottom: 15px;
+  }
+}
+
+/* Additional container fixes for React components */
+body.dark .home-component,
+body.dark .dashboard-component,
+body.dark .devices-component,
+body.dark [data-component="home"],
+body.dark [data-component="dashboard"],
+body.dark [data-component="devices"] {
+  background: transparent !important;
+  color: #f1f5f9 !important;
+}
+
+/* Grid layout specific fixes */
+body.dark .grid,
+body.dark .flex-grid,
+body.dark .card-grid {
+  background: transparent !important;
+  gap: 20px;
+}
+
+body.dark .grid-item,
+body.dark .flex-item {
+  background: transparent !important;
 }
