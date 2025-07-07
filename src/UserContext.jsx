@@ -10,7 +10,6 @@ const normalizeUser = (userInfo) => {
     phoneNumber: userInfo.phoneNumber || null, // Add phoneNumber here
     isAdmin: userInfo.isAdmin === true || userInfo.isAdmin === 'true',
   };
-  console.log('normalizeUser:', normalized);
   return normalized;
 };
 
@@ -24,7 +23,6 @@ export const UserProvider = ({ children }) => {
       try {
         const parsedUser = JSON.parse(savedUser);
         const normalizedUser = normalizeUser(parsedUser);
-        console.log('Loaded user from localStorage:', normalizedUser);
         return normalizedUser;
       } catch (e) {
         localStorage.removeItem('user');
@@ -46,8 +44,6 @@ export const UserProvider = ({ children }) => {
 
   const setUser = useCallback((userInfo) => {
     const normalizedUser = normalizeUser(userInfo);
-    console.log('setUser called with:', userInfo);
-    console.log('Normalized user:', normalizedUser);
     if (normalizedUser) {
       setUserState(normalizedUser);
       setUsernameState(normalizedUser.username);
@@ -95,7 +91,6 @@ export const UserProvider = ({ children }) => {
     setUser(null);
     setIsLoading(false);
     setIsRefreshing(false);
-    console.log('User logged out');
   }, [setAccessToken, setRefreshToken, setUser]);
 
   const refreshAccessToken = useCallback(async () => {
@@ -105,7 +100,6 @@ export const UserProvider = ({ children }) => {
       setIsRefreshing(true);
       const storedRefreshToken = localStorage.getItem('refreshToken');
       if (!storedRefreshToken) {
-        console.log('No refresh token found during refresh. Logging out.');
         logout();
         return null;
       }
@@ -115,26 +109,22 @@ export const UserProvider = ({ children }) => {
       });
 
       const newToken = response.data.accessToken;
-      console.log('Token refreshed:', newToken);
 
       if (newToken) {
         setAccessToken(newToken);
 
         // Fetch updated user data from /users/getuser
         const userResponse = await axiosInstance.get('/users/getuser');
-        console.log('User data fetched after token refresh:', userResponse.data);
 
         // IMPORTANT: pass userResponse.data.user, NOT userResponse.data
         setUser(userResponse.data.user);
 
         return newToken;
       } else {
-        console.log('No access token in refresh response. Logging out.');
         logout();
         return null;
       }
     } catch (error) {
-      console.error('Error refreshing token or fetching user:', error);
       logout();
       return null;
     } finally {

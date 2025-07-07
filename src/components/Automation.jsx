@@ -22,14 +22,12 @@ const Automation = () => {
 
   // Fetch devices from /device/getDevices
   const fetchDevices = useCallback(async () => {
-    console.log('[fetchDevices] Start fetching devices');
     try {
       const res = await axiosInstance.get('/device/getDevices', {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      console.log('[fetchDevices] Response:', res.data);
       if (isMounted.current) {
         if (res.data.devices && Array.isArray(res.data.devices)) {
           setDevices(res.data.devices);
@@ -43,12 +41,10 @@ const Automation = () => {
       if (err.response?.status === 401 && refreshToken) {
         // Try refreshing token
         try {
-          console.log('[fetchDevices] Trying to refresh token');
           const refreshRes = await axiosInstance.post('/users/refresh', {});
           const newToken = refreshRes.data.accessToken || refreshRes.headers['x-access-token'];
           if (newToken) {
             setAccessToken(newToken);
-            console.log('[fetchDevices] Token refreshed, retry fetchDevices');
             await fetchDevices();
           } else {
             logout();
@@ -64,7 +60,6 @@ const Automation = () => {
 
   // Fetch rules for devices
   const fetchRulesForDevices = useCallback(async (devicesToFetch) => {
-    console.log('[fetchRulesForDevices] Fetching rules for devices:', devicesToFetch.map(d => d.clientId));
     setLoading(true);
     setError(null);
 
@@ -75,11 +70,9 @@ const Automation = () => {
         const res = await axiosInstance.post('/mqtt/getRule', {
           deviceId: device._id,
         });
-        console.log(`[fetchRulesForDevices] Rules for device ${device.clientId}:`, res.data);
         rulesMap[device.clientId] =
           res.data.rules && Array.isArray(res.data.rules.rules) ? res.data.rules.rules : [];
       } catch (err) {
-        console.error(`[fetchRulesForDevices] Error fetching rules for device ${device.clientId}:`, err);
         rulesMap[device.clientId] = [];
       }
     }
@@ -94,7 +87,6 @@ const Automation = () => {
     isMounted.current = true;
 
     if (!accessToken) {
-      console.log('[useEffect] No access token, skipping fetch');
       return;
     }
 
@@ -112,7 +104,6 @@ const Automation = () => {
   // When devices update, fetch their rules
   useEffect(() => {
     if (devices.length === 0) {
-      console.log('[useEffect] No devices available, skipping fetchRulesForDevices');
       setDeviceRules({});
       return;
     }
@@ -123,13 +114,11 @@ const Automation = () => {
   const handleDelete = async (deviceClientId, ruleId) => {
     if (!window.confirm('Are you sure you want to delete this timer?')) return;
     try {
-      console.log('[handleDelete] Deleting rule:', ruleId);
       await axiosInstance.delete('/mqtt/delete', { data: { ruleId } });
       setDeviceRules((prev) => ({
         ...prev,
         [deviceClientId]: prev[deviceClientId].filter((rule) => rule._id !== ruleId),
       }));
-      console.log('[handleDelete] Rule deleted successfully');
     } catch (err) {
       console.error('[handleDelete] Failed to delete rule:', err);
       alert('Failed to delete rule');
@@ -155,7 +144,6 @@ const Automation = () => {
     if (!editingRule) return;
 
     try {
-      console.log('[handleUpdateSubmit] Updating rule:', editingRule.ruleId, editForm);
       await axiosInstance.put('/mqtt/update', {
         ruleId: editingRule.ruleId,
         onTime: editForm.onTime,
@@ -169,9 +157,7 @@ const Automation = () => {
         return { ...prev, [editingRule.deviceClientId]: updatedRules };
       });
       setEditingRule(null);
-      console.log('[handleUpdateSubmit] Rule updated');
     } catch (err) {
-      console.error('[handleUpdateSubmit] Failed to update rule:', err);
       alert('Failed to update rule');
     }
   };
@@ -194,7 +180,6 @@ const Automation = () => {
 
     try {
       const topic = `cmnd/${addingForDevice.clientId}/POWER`;
-      console.log('[handleAddSubmit] Adding rule:', { deviceId: addingForDevice._id, topic, ...addForm });
 
       await axiosInstance.post('/mqtt/automation', {
         deviceId: addingForDevice._id,
@@ -217,7 +202,6 @@ const Automation = () => {
       }));
 
       setAddingForDevice(null);
-      console.log('[handleAddSubmit] Rule added and rules refreshed');
     } catch (err) {
       console.error('[handleAddSubmit] Failed to add rule:', err);
       alert('Failed to add rule');

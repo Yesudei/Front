@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
 function DarkModeToggle() {
-  const [isDark, setIsDark] = useState(() =>
-    document.body.classList.contains('dark')
-  );
+  const [isDark, setIsDark] = useState(() => {
+    // Load preference from localStorage or fallback to false
+    const stored = localStorage.getItem('darkMode');
+    return stored === 'true';
+  });
 
   useEffect(() => {
     if (isDark) {
@@ -11,9 +13,12 @@ function DarkModeToggle() {
     } else {
       document.body.classList.remove('dark');
     }
+
+    // Save to localStorage
+    localStorage.setItem('darkMode', isDark);
   }, [isDark]);
 
-  const toggleDarkMode = () => setIsDark(!isDark);
+  const toggleDarkMode = () => setIsDark(prev => !prev);
 
   return (
     <label className="switch">
