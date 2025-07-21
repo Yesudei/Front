@@ -41,7 +41,7 @@ export const UserProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [username, setUsernameState] = useState(user?.username || null);
-
+// /////////////////////////////////////////////////////////////////////////
   const setUser = useCallback((userInfo) => {
     const normalizedUser = normalizeUser(userInfo);
     if (normalizedUser) {
